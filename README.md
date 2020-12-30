@@ -1,28 +1,35 @@
 # Paradox Spectra 1738 Serial Output Reverse Engineering
-Reverse engineering of Paradox Spectra 1738 Serial Output and reading it from Raspberry PI.
+Reverse engineering of Paradox Spectra 1738 Security System Serial Output and reading it from Raspberry PI.
 
 ## Paradox Spectra 1738 serial output
-Spectra 1738 serial output is 4 bytes. Look at the tables below.
+Spectra 1738 serial output is 4 bytes. Look at the tables by the end of this doument.
 
 - **Byte 1** is an event.
-- **Byte 2** has a different messages like zone number, user number, status message, trouble info.
-- **Byte 3, Byte 4** are representing clock.
+- **Byte 2** is a message like zone number, user, status, trouble info.
+- **Byte 3, Byte 4** are used for clock.
 
-## Connect Paradox serial output to RaspberryPI
-Connect Paradox serial output into Raspberry PI serial input.</br> 
-As it is unknown how to send commands to Paradox only two wires needed: ground and data. 
-Data is transmitted from Paradox Tx pin (transmit) to Raspberry Rx pin (receive).</br>
-Paradox Tx output is 5V and Raspberry Rx is only 3,3V.</br>
+## Connect Paradox serial output to Raspberry PI
+To read Paradox security messages by Raspberry PI we have to connect these two hardware devices.</br> 
+Both devices have a serial input/output IO (COM ports). Serial interface is using one wire to send data
+and another wire to receive data. 
+As it is unknown how to send commands to Paradox we need only one wire for communication. 
+Obviously we need additional wire for ground connection.
+Data transmitted from Paradox Tx pin (transmit) to Raspberry Rx pin (receive).</br>
+As Paradox Tx output is 5V and Raspberry Rx is 3,3V we can't connect them directly.</br>
 **DO NOT CONNECT Tx directly to Rx, this will damage your Raspberry!**</br>
-Usual recommendation is to use a special 5v to 3,3v converter. As I do not have this and the current is very small then simple voltage divider with two resistors is good to go.
+Usual recommendation is to use a special 5v to 3,3v converter. 
+As I do not have this converter and the electric current is very small then simple voltage divider with a two resistors is good to go.
 
 ![Spectra Layout](Readme/SpectraLayout.png)
 
 ## Read serial messages in Raspberry
-This is my very first project to deal with a COM-port and serial messages. I start at the beginning of
-creating a foreach loop to see is there any COM-ports presented in my Raspberry.
+This is my very first project to deal with a COM-port and serial messages. Therefore I start at the beginning and
+creating a foreach loop to see is there any COM-ports presented in my Raspberry. 
 #### Find Raspberry COM port
-This foreach loop lists all COM-ports presented in Raspberry.
+This foreach loop list all available COM-ports presented by Raspberry.
+If there is no COM-port available then this have to be enabled from the Raspberry global settings raspi-config.
+Keep in mind that SerialPort is exist in System.IO.Ports whichcan be downloaded as NuGet package.
+
 ```C
 string[] ports = SerialPort.GetPortNames();
 Console.WriteLine("The following serial ports are found:");
@@ -34,6 +41,7 @@ foreach (string port in ports)
 // /dev/ttyAMA0
 ```
 #### Create and open COM port
+The next task is to write some lines of code to create a COM port which we can use for reading serial messages.
 
 ```C
 string ComPort = "/dev/ttyAMA0";
@@ -43,8 +51,9 @@ _serialPort = new SerialPort(ComPort, baudrate);
 _serialPort.Open();
 ```
 #### Read serial messages 
-This loop is reading exactly 4 bytes messages. Data stream will be saved into byte array DataStream[].
-Now the rest of the work is simple reading these bytes and to do some smart decisions. 
+As Paradox messages are always 4 bytes they needs to be read in batches of 4 bytes. 
+Following piece of code is doing exactly this and the data stream is saved into byte array DataStream[].
+Now the rest of the work is simple reading these bytes and do some smart decisions. 
 ```c
 byte[] DataStream = new byte[4];
 byte index = 0;
@@ -83,7 +92,7 @@ bool isStatus = EventCategory == Category.STATUS;
 ---
 #### Byte 2
 ---
-Byte 2 are messages.</br>
+Byte 2 is a message like zone number, user info, status info, trouble info.</br>
 Messages are displayed based on the event category.
 ```c
 if (!isStatus)
@@ -109,18 +118,20 @@ Following is the output of this program.</br>
 ---
 #### Bytes 3 and Bytes 4 are octal clock
 ---
-This was pretty nice reverse engineering task to figure out how the clock is working. 
-This is completely useful as it reads just the time reported by Paradox panel (24h).
-To solve this clock challenge I built the clock generator in different project.
-During that I realized that the clock is based on octal numeric system. Huhh, do you know what it is?
-The numbers are going up only to 7 and after that comes 10. 
+Nice reverse engineering task was to figure out how the clock is working. 
+This is completely useless as it reads just the time reported by Paradox panel (24h format). 
+It is useless because after integration the clock is managed anyway by Rasperry PI.
+Still, to solve this mathemathical clock challenge I built first the clock generator.
+During this work I realized that the clock is based on octal numeric system. 
+Huhh, crazy thing. Do you know what is Octal numeric system? The numbers are going up only to 7 and after that comes 10. 
 >Octal 0,1,2,3,4,5,6,7,10,11,12,13,14,15,16,17 ...
 
-The final solution is genius and has just two lines of code with little mathematics. </br>
-Some examples:
+Some time examples:
 * time 23:59 is in Octal 273 260 and in Hex 0xBB 0xB0.
-* time 8:00 is in Octal 100.
-* time 20:00 is in Otal 240 and in Hex 0xA0
+* time 8:00 is in Octal 100 and in Hex 0x08.
+* time 20:00 is in Otal 240 and in Hex 0xA0.
+
+The final solution is a genius as it has just two lines of code (hours and minutes) with little mathematics. </br>
 
 ```c#
 int msb = inData[2];
@@ -135,38 +146,43 @@ DateTime dateTime = DateTime.Now.Date.Add(time);
 Console.Write($"{dateTime:t} ");
 ```
 ## Reverse engineering with oscilloscope
-This is my first experiment with serial communication. I never worked before with this old COM-technology and 
-when I started to see real packets with oscilloscope, I enjoyed this like a child.</br>
-There are some projects in GitHub related to Paradox security system but no one is for this very old system.
+This is my first experiment with serial communication. I never worked before with the old COM-technology.
+I connected my digital oscsilloscope directly to Paradox Tx serial output.
+When I finally figured out which pin is the Txand and started to see real packets on my laptop, I enjoyed this like a child.</br>
+There are some projects in GitHub related to Paradox security system but no one is for this 20 years old system.
 The first task was to understand that all packets are exactly 4 bytes. 
-I realized immediately some data pattern when IR detectors are active. That was full of magic.
+I realized very quickly some data patterns when IR detectors are active. </br>
+**That was like a magic.**
 ![Oscsilloscope](Readme/oscsilloscope.png)
 ![Oscsilloscope2](Readme/oscsilloscope2.png)
 
 ## Security system and Home Automation
-I am going to integrate the Paradox to my Home Automation project through the COM port. 
+The next task is to integrate the Paradox to Home Automation through the COM port. 
 
-#### What is the benefit to integrate?
-Everything which is related to person presence in house can be automated. </br>
-I have implemented following scenarios.
-* Garden lights. If someone is at home then garden lights are turned on automatically. Algorithm is the following.
+#### What is the benefit of the integration?
+Everything which is related to human presence and location in house can be automated. </br>
+I have already implemented following scenarios.
+* **Garden lights.** If someone is at home then garden lights are turned on automatically. Algorithm is the following.
   * Lights are turned on in between sunset and sunrise.
   * Lights are turned off during sleeping time 00:00-07:00
   * Lights are turned off if nobody is at home in 1 hour. Detected by IR detectors.
-* Entry-Exit patterns. If someone leaves or enters the house, then the direction of movement is detected. 
-* If home is secured (by Home Automation and not by Paradox), then I will get immediately notification if someone is moving in house.
+* **Entry-Exit patterns.** If someone leaves or enters the house then the direction of movement is detected and reported to home automation. 
+* **Security messages.** If home is secured (by Home Automation and not by the Paradox) I will get immediately notification if someone is moving in house.
 
 New ideas of using this Paradox integration.
-* Some lights in house can be turned on/off automatically.
+* Some lights can be turned on/off automatically in house.
   * Corridor light will be the first one. I really miss that.
-  * Hall light and some others which needed temporarily. 
+  * Hall light and some others which needs to be turned on temporarily. 
 
 *Garden lights are automated by Home Automation, Paradox Spectra and IR detectors.*</br>
 ![Garden Lights](Readme/GardenLights.png)
 #### Current integration (holy mess)
-I had the integration already but it is done in very difficult way. 
-All sensors are connected physically to MCP23017 which is a 16bit parallel I/O expansion for I2C.
-Now I can get rid of hundreds of wires to replace them just with a two wires needed for COM port.</br>
+The current integration is done in very difficult way. 
+All sensors are connected physically to MCP23017 which is a 16 bit parallel I/O expansion.
+MCP23017 is connected to Raspberry by I2C protocol. Program is looping these ports in every second to find IR detectors interruptions.</br>
+With the new serial port connection I can get rid of hundreds of wires to replace them just with two wires. 
+I took some pictures because very soon this mess is not exist anymore. </br>
+
 ![M_C_P23017](Readme/MCP23017.png)
 ![M C P23017 2](Readme/MCP23017_2.png)
 ## Paradox serial output messages explained
@@ -368,7 +384,7 @@ Now I can get rid of hundreds of wires to replace them just with a two wires nee
 
 ### Resources used during the project
 Serial Port Programming With .NET.
-Good reasource for beginner how to read serial messages.</br>
+Good resource for beginner to understand how to read serial messages.</br>
 https://www.instructables.com/Serial-Port-Programming-With-NET/
 
 Serial Communication with .NET Core 3.0 on RPi Linux.
@@ -382,23 +398,23 @@ https://learn.sparkfun.com/tutorials/serial-communication/all
 Picoscope oscilloscope for serial communication. </br>
 https://www.picotech.com/download/datasheets/MM043_PicoScope_Serial_Decoding_Data_Sheet.pdf
 
-Paradox home security hacking. New devices, not the old one. </br>
+Paradox home security hacking for newest devices. Useless to me </br>
 https://harizanov.com/2014/07/interfacing-with-paradox-home-security-system-attempt-2/
 
-Looked that one but is useless to me as it only for newest systems.</br>
+This project is useless to me as well as it is only for newest systems.</br>
 https://github.com/ParadoxAlarmInterface
 
-Adding two octal numbers without converting them.
-This was used to build the octal generator for a clock reverse engineering.</br>
+Raspberry Tx->Rx (5v->3.3v)</br>
+https://www.raspberrypi.org/forums/viewtopic.php?t=94042 </br>
+
+Working with octal, byte, hex numbers.
+These links were used to build the octal generator for a clock reverse engineering.</br>
 https://stackoverflow.com/questions/34362859/add-two-octal-numbers-directly-without-converting-to-decimal </br>
 https://stackoverflow.com/questions/3781764/how-can-we-convert-binary-number-into-its-octal-number-using-c </br>
 https://docs.microsoft.com/en-us/dotnet/api/system.bitconverter.tostring?view=net-5.0 </br>
 https://stackoverflow.com/questions/1139957/convert-integer-to-hexadecimal-and-back-again </br>
 
-Raspberry Tx->Rx (5v->3.3v)</br>
-https://www.raspberrypi.org/forums/viewtopic.php?t=94042
-
 Setup WSL (Windows Subsystem for Linux)</br>
-https://docs.microsoft.com/en-us/windows/wsl/install-win10?WT.mc_id=devto-blog-dglover
+https://docs.microsoft.com/en-us/windows/wsl/install-win10?WT.mc_id=devto-blog-dglover </br>
 Raspberry headless setup</br>
-https://desertbot.io/blog/headless-raspberry-pi-3-bplus-ssh-wifi-setup
+https://desertbot.io/blog/headless-raspberry-pi-3-bplus-ssh-wifi-setup </br>
