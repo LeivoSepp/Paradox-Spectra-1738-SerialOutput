@@ -150,12 +150,13 @@ New ideas of using this integration.
 * Some lights in house can be turned on automatically.
   * Corridor light is the first one. I really miss that.
   * 
-
+![Garden Lights](Readme/GardenLights.png)
 #### Current integration (holy mess)
 I had the integration already but it is done in very difficult way. 
 All sensors are connected physically to MCP23017 which is a 16bit parallel I/O expansion for I2C.
 Now I can get rid of hundreds of wires to replace them just with two wires needed for COM port.</br>
 ![M_C_P23017](Readme/MCP23017.png)
+![M C P23017 2](Readme/MCP23017_2.png)
 ## Paradox serial output messages explained
 
 <table>
