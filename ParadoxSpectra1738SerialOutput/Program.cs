@@ -91,6 +91,7 @@ namespace ParadoxSpectra1738SerialOutput
 
             try
             {
+                //Spectra messages output is always bytes
                 if (_serialPort.BytesToRead < 4)
                 {
                     index = 0;
