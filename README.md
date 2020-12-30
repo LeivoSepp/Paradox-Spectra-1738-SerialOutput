@@ -126,6 +126,9 @@ During this work I realized that the clock is based on octal numeric system.
 Huhh, crazy thing. Do you know what is Octal numeric system? The numbers are going up only to 7 and after that comes 10. 
 >Octal 0,1,2,3,4,5,6,7,10,11,12,13,14,15,16,17 ...
 
+The Octal Clock project with the generator.</br>
+https://github.com/LeivoSepp/Octal-Clock-Two-Bytes-24h </br>
+
 Some time examples:
 * time 23:59 is in Octal 273 260 and in Hex 0xBB 0xB0.
 * time 8:00 is in Octal 100 and in Hex 0x08.
