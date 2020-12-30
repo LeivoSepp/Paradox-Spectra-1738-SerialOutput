@@ -114,7 +114,7 @@ This is completely useful as it reads just the time reported by Paradox panel (2
 To solve this clock challenge I built the clock generator in different project.
 During that I realized that the clock is based on octal numeric system. Huhh, do you know what it is?
 The numbers are going up only to 7 and after that comes 10. 
->1,2,3,4,5,6,7,10,11,12,13,14,15,16,17 ...
+>Octal 0,1,2,3,4,5,6,7,10,11,12,13,14,15,16,17 ...
 
 The final solution is genius and has just two lines of code with little mathematics. </br>
 Some examples:
@@ -366,7 +366,7 @@ Now I can get rid of hundreds of wires to replace them just with a two wires nee
     </tr>
 </table>
 
-##### Resources used during the project
+### Resources used during the project
 Serial Port Programming With .NET.
 Good reasource for beginner how to read serial messages.</br>
 https://www.instructables.com/Serial-Port-Programming-With-NET/
