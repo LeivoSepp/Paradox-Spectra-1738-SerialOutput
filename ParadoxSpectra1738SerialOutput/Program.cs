@@ -11,8 +11,6 @@ namespace ParadoxSpectra1738SerialOutput
     class Program
     {
         static SerialPort _serialPort;
-        static byte[] inData = new byte[4];
-        static byte index = 0;
         static void Main(string[] args)
         {
             // Get a list of serial port names
@@ -26,19 +24,11 @@ namespace ParadoxSpectra1738SerialOutput
             string ComPort = "/dev/ttyAMA0";
             int baudrate = 9600;
             Console.WriteLine($"serial: {ComPort} {baudrate}");
-            _serialPort = new SerialPort(ComPort, baudrate)
-            {
-                // Set the read/write timeouts
-                //ReadTimeout = 1500,
-                WriteTimeout = 1500
-            };
+            _serialPort = new SerialPort(ComPort, baudrate);
             try
             {
                 _serialPort.Open();
-                while (true)
-                {
-                    loop();
-                }
+                ReadMessages();
             }
             catch (IOException ex)
             {
@@ -86,74 +76,75 @@ namespace ParadoxSpectra1738SerialOutput
             new Message(){Data = "71", Name = "FIRE"},
             new Message(){Data = "81", Name = "TECHNO"}
             };
-        public static void loop()
+        public static void ReadMessages()
         {
-
-            try
+            byte[] DataStream = new byte[4];
+            byte index = 0;
+            while (true)
             {
-                //Spectra messages output is always bytes
-                if (_serialPort.BytesToRead < 4)
+                try
                 {
-                    index = 0;
-                    while (index < 4)
+                    //Spectra message output is always 4 bytes
+                    if (_serialPort.BytesToRead < 4)
                     {
-                        inData[index++] = (byte)_serialPort.ReadByte();
+                        index = 0;
+                        while (index < 4)
+                        {
+                            DataStream[index++] = (byte)_serialPort.ReadByte();
+                        }
                     }
+                    int msb = DataStream[2];
+                    int lsb = DataStream[3];
+
+                    //thats a clock, nice reverse engineering from octal logic
+                    int hour = msb / 8;
+                    int minute = msb % 8 * 16 + lsb / 16;
+
+                    TimeSpan time = new TimeSpan(hour, minute, 0);
+                    DateTime dateTime = DateTime.Now.Date.Add(time);
+                    Console.Write($"{dateTime:t} ");
+
+                    for (int i = 0; i < DataStream.Length; i++)
+                    {
+                        Console.Write($"{DataStream[i]:X2} ");
+                    }
+
+                    string EventID = DataStream[0].ToString("X2");
+                    string Event = events.Where(x => x.Data == EventID).Select(x => x.Name).DefaultIfEmpty($"NoName {EventID}").First();
+                    int EventCategory = events.Where(x => x.Data == EventID).Select(x => x.Category).DefaultIfEmpty(DataStream[0]).First();
+
+                    string MessageID = DataStream[1].ToString("X2");
+                    string Message = MessageID;
+
+                    bool isZoneAction = EventCategory == Category.SENSOR;
+                    bool isUserAction = EventCategory == Category.USER;
+                    bool isTrouble = EventCategory == Category.TROUBLE;
+                    bool isStatus = EventCategory == Category.STATUS;
+
+                    if (!isStatus)
+                        Console.Write($" {Event}");
+
+                    if (isZoneAction)
+                        Message = sensors.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
+
+                    if (isStatus)
+                        Message = statuses.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
+
+                    if (isTrouble)
+                        Message = troubles.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
+
+                    if (isUserAction)
+                        Message = $"User:{MessageID}";
+
+                    Console.Write($" {Message}");
+                    //Console.Write($" msg:{Convert.ToString(inData[1], 2)}");
+
+                    Console.WriteLine();
                 }
-                int msb = inData[2];
-                int lsb = inData[3];
-
-                //thats a clock, nice reverse engineering from octal logic
-                int hour = msb / 8;
-                int minute = msb % 8 * 16 + lsb / 16;
-
-                TimeSpan time = new TimeSpan(hour, minute, 0);
-                DateTime dateTime = DateTime.Now.Date.Add(time);
-                Console.Write($"{dateTime:t} ");
-
-                for (int i = 0; i < inData.Length; i++)
+                catch (IOException ex)
                 {
-                    Console.Write($"{inData[i]:X2} ");
+                    Console.WriteLine($"{ex}");
                 }
-
-                string EventID = inData[0].ToString("X2");
-                string Event = events.Where(x => x.Data == EventID).Select(x => x.Name).DefaultIfEmpty($"NoName {EventID}").First();
-                int EventCategory = events.Where(x => x.Data == EventID).Select(x => x.Category).DefaultIfEmpty(inData[0]).First();
-
-                string MessageID = inData[1].ToString("X2");
-                string Message = MessageID;
-
-                bool isZoneAction = EventCategory == Category.SENSOR;
-                bool isUserAction = EventCategory == Category.USER;
-                bool isTrouble = EventCategory == Category.TROUBLE;
-                bool isStatus = EventCategory == Category.STATUS;
-
-                if (!isStatus)
-                    Console.Write($" {Event}");
-                if (isZoneAction)
-                {
-                    Message = sensors.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
-                }
-                if (isStatus)
-                {
-                    Message = statuses.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
-                }
-                if (isTrouble)
-                {
-                    Message = troubles.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
-                }
-                if (isUserAction)
-                {
-                    Message = $"User:{MessageID}";
-                }
-                Console.Write($" {Message}");
-                //Console.Write($" msg:{Convert.ToString(inData[1], 2)}");
-
-                Console.WriteLine();
-            }
-            catch (IOException ex)
-            {
-                Console.WriteLine($"{ex}");
             }
         }
     }

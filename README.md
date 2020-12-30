@@ -19,8 +19,90 @@ Usually recommendation is to use special 5v to 3,3v converter. As I do not have 
 ![Spectra Layout](Readme/SpectraLayout.png)
 
 ## Read serial messages in Raspberry
+This is my very first project to deal with a COM-port and serial messages. I start at the beginning of
+creating a foreach loop to see is there any COM-ports presented in my Raspberry.
+#### Figure out Raspberry COM port
+This foreach loop lists all COM-ports presented in Raspberry.
+```C
+string[] ports = SerialPort.GetPortNames();
+Console.WriteLine("The following serial ports are found:");
+foreach (string port in ports)
+{
+    Console.WriteLine(port);
+}
+// The following serial ports are found:
+// /dev/ttyAMA0
+```
+#### Create and open COM port
 
-## Paradox clock from bytes 3 and 4
+```C
+string ComPort = "/dev/ttyAMA0";
+int baudrate = 9600;
+Console.WriteLine($"serial: {ComPort} {baudrate}");
+_serialPort = new SerialPort(ComPort, baudrate);
+_serialPort.Open();
+```
+#### Read serial messages 
+This loop is reading exactly 4 bytes messages. Data stream will be saved into byte array DataStream.
+Now the rest of the work is simple just read these individual bytes and do some smart decisions.
+```c
+byte[] DataStream = new byte[4];
+byte index = 0;
+while (true)
+{
+     //Spectra message output is always 4 bytes
+    if (_serialPort.BytesToRead < 4)
+    {
+        index = 0;
+        while (index < 4)
+        {
+            DataStream[index++] = (byte)_serialPort.ReadByte();
+        }
+    }
+}
+```
+#### Byte 1
+Byte 1 is representing an events and they are categorized. 
+* Zones: zone open, closes, alarms in zone.
+* Statuses: all kind of messages related arming, disarming etc.
+* Users: which user code has been used for arming/disarming.
+* Troubles: some trouble messages, havent seen any.
+
+```c
+string EventID = DataStream[0].ToString("X2");
+string Event = events.Where(x => x.Data == EventID).Select(x => x.Name).DefaultIfEmpty($"NoName {EventID}").First();
+int EventCategory = events.Where(x => x.Data == EventID).Select(x => x.Category).DefaultIfEmpty(DataStream[0]).First();
+
+bool isZoneAction = EventCategory == Category.SENSOR;
+bool isUserAction = EventCategory == Category.USER;
+bool isTrouble = EventCategory == Category.TROUBLE;
+bool isStatus = EventCategory == Category.STATUS;
+```
+#### Byte 2
+Byte 2 are messages.</br>
+Based on the categories the correct message is displayed.
+```c
+if (!isStatus)
+    Console.Write($" {Event}");
+
+if (isZoneAction)
+    Message = sensors.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
+
+if (isStatus)
+    Message = statuses.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
+
+if (isTrouble)
+    Message = troubles.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
+
+if (isUserAction)
+    Message = $"User:{MessageID}";
+
+Console.Write($" {Message}");
+```
+Following is the output of this program.
+</br>
+![Serial Output](Readme/SerialOutput.png)
+#### Paradox clock from bytes 3 and 4
 This was pretty nice reverse engineering task to figure out how the clock is working. 
 This is completely useful as it reads just the time reported by Paradox panel (24h).
 To solve this clock challenge I built the clock generator in different project.
@@ -42,6 +124,8 @@ TimeSpan time = new TimeSpan(hour, minute, 0);
 DateTime dateTime = DateTime.Now.Date.Add(time);
 Console.Write($"{dateTime:t} ");
 ```
+## Paradox serial output messages explained
+
 <table>
     <tr>
                  <td colspan=2><b>Byte 1</b></ td> 
