@@ -154,7 +154,7 @@ New ideas of using this integration.
 #### Current integration (holy mess)
 I had the integration already but it is done in very difficult way. 
 All sensors are connected physically to MCP23017 which is a 16bit parallel I/O expansion for I2C.
-Now I can get rid of hundreds of wires to replace them just with two wires needed for COM port.
+Now I can get rid of hundreds of wires to replace them just with two wires needed for COM port.</br>
 ![M_C_P23017](Readme/MCP23017.png)
 ## Paradox serial output messages explained
 
