@@ -410,13 +410,6 @@ https://github.com/ParadoxAlarmInterface
 Raspberry Tx->Rx (5v->3.3v)</br>
 https://www.raspberrypi.org/forums/viewtopic.php?t=94042 </br>
 
-Working with octal, byte, hex numbers.
-These links were used to build the octal generator for a clock reverse engineering.</br>
-https://stackoverflow.com/questions/34362859/add-two-octal-numbers-directly-without-converting-to-decimal </br>
-https://stackoverflow.com/questions/3781764/how-can-we-convert-binary-number-into-its-octal-number-using-c </br>
-https://docs.microsoft.com/en-us/dotnet/api/system.bitconverter.tostring?view=net-5.0 </br>
-https://stackoverflow.com/questions/1139957/convert-integer-to-hexadecimal-and-back-again </br>
-
 Setup WSL (Windows Subsystem for Linux)</br>
 https://docs.microsoft.com/en-us/windows/wsl/install-win10?WT.mc_id=devto-blog-dglover </br>
 Raspberry headless setup</br>
