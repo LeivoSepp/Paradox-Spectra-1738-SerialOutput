@@ -61,8 +61,10 @@ while (true)
     }
 }
 ```
+---
 #### Byte 1
-Byte 1 is representing an events and they are categorized. 
+---
+Byte 1 is an event. These events are categorized based on message context. 
 * Zones: zone open, closes, alarms in zone.
 * Statuses: all kind of messages related arming, disarming etc.
 * Users: which user code has been used for arming/disarming.
@@ -78,9 +80,11 @@ bool isUserAction = EventCategory == Category.USER;
 bool isTrouble = EventCategory == Category.TROUBLE;
 bool isStatus = EventCategory == Category.STATUS;
 ```
+---
 #### Byte 2
+---
 Byte 2 are messages.</br>
-Based on the categories the correct message is displayed.
+Messages are displayed based on the event category.
 ```c
 if (!isStatus)
     Console.Write($" {Event}");
@@ -99,10 +103,12 @@ if (isUserAction)
 
 Console.Write($" {Message}");
 ```
-Following is the output of this program.
-</br>
+Following is the output of this program.</br>
 ![Serial Output](Readme/SerialOutput.png)
-#### Paradox clock from bytes 3 and 4
+
+---
+#### Bytes 3 and Bytes 4 are octal clock
+---
 This was pretty nice reverse engineering task to figure out how the clock is working. 
 This is completely useful as it reads just the time reported by Paradox panel (24h).
 To solve this clock challenge I built the clock generator in different project.
@@ -146,10 +152,12 @@ I have implemented following scenarios.
 * Entry-Exit patterns. If someone leaves or enters the house, then the direction of movement is detected. 
 * If home is secured (by Home Automation and not by Paradox), then I will get immediately notification if someone is moving in house.
 
-New ideas of using this integration.
-* Some lights in house can be turned on automatically.
-  * Corridor light is the first one. I really miss that.
-  * 
+New ideas of using this Paradox integration.
+* Some lights in house can be turned on/off automatically.
+  * Corridor light will be the first one. I really miss that.
+  * Hall light and some others which needed temporarily. 
+
+*Garden lights are automated by Home Automation, Paradox Spectra and IR detectors.*
 ![Garden Lights](Readme/GardenLights.png)
 #### Current integration (holy mess)
 I had the integration already but it is done in very difficult way. 
@@ -366,6 +374,9 @@ https://www.hackster.io/sxwei123/serial-communication-with-net-core-3-0-on-rpi-l
 
 Overall serial communication explanation.</br>
 https://learn.sparkfun.com/tutorials/serial-communication/all
+
+Picoscope oscilloscope for serial communication. </br>
+https://www.picotech.com/download/datasheets/MM043_PicoScope_Serial_Decoding_Data_Sheet.pdf
 
 Paradox home security hacking. New devices, not the old one. </br>
 https://harizanov.com/2014/07/interfacing-with-paradox-home-security-system-attempt-2/
