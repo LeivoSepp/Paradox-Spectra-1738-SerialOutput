@@ -353,3 +353,37 @@ Now I can get rid of hundreds of wires to replace them just with two wires neede
                  <td>Zone 8</ td>  
     </tr>
 </table>
+
+##### Resources used during the project
+Serial Port Programming With .NET.
+Good reasource for beginner how to read serial messages.</br>
+https://www.instructables.com/Serial-Port-Programming-With-NET/
+
+Serial Communication with .NET Core 3.0 on RPi Linux.
+Good build and publish scripts.</br>
+https://dev.to/azure/net-core-iot-raspberry-pi-linux-and-azure-iot-hub-learn-how-to-build-deploy-and-debug-d1f </br>
+https://www.hackster.io/sxwei123/serial-communication-with-net-core-3-0-on-rpi-linux-0f2ed4
+
+Overall serial communication explanation.</br>
+https://learn.sparkfun.com/tutorials/serial-communication/all
+
+Paradox home security hacking. New devices, not the old one. </br>
+https://harizanov.com/2014/07/interfacing-with-paradox-home-security-system-attempt-2/
+
+Looked that one but is useless to me as it only for newest systems.</br>
+https://github.com/ParadoxAlarmInterface
+
+Adding two octal numbers without converting them.
+This was used to build the octal generator for a clock reverse engineering.</br>
+https://stackoverflow.com/questions/34362859/add-two-octal-numbers-directly-without-converting-to-decimal </br>
+https://stackoverflow.com/questions/3781764/how-can-we-convert-binary-number-into-its-octal-number-using-c </br>
+https://docs.microsoft.com/en-us/dotnet/api/system.bitconverter.tostring?view=net-5.0 </br>
+https://stackoverflow.com/questions/1139957/convert-integer-to-hexadecimal-and-back-again </br>
+
+Raspberry Tx->Rx (5v->3.3v)</br>
+https://www.raspberrypi.org/forums/viewtopic.php?t=94042
+
+Setup WSL (Windows Subsystem for Linux)</br>
+https://docs.microsoft.com/en-us/windows/wsl/install-win10?WT.mc_id=devto-blog-dglover
+Raspberry headless setup</br>
+https://desertbot.io/blog/headless-raspberry-pi-3-bplus-ssh-wifi-setup
