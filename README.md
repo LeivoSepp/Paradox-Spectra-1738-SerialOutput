@@ -1,4 +1,4 @@
-# Paradox Spectra 1738 Serial Output
+# Paradox Spectra 1738 Serial Output Reverse Engineering
 Reverse engineering of Paradox Spectra 1738 Serial Output and reading it from Raspberry PI.
 
 ## Paradox Spectra 1738 serial output
@@ -116,7 +116,11 @@ During that I realized that the clock is based on octal numeric system. Huhh, do
 The numbers are going up only to 7 and after that comes 10. 
 >1,2,3,4,5,6,7,10,11,12,13,14,15,16,17 ...
 
-The final solution is genius and has just two lines of code with little mathematics. 
+The final solution is genius and has just two lines of code with little mathematics. </br>
+Some examples:
+* time 23:59 is in Octal 273 260 and in Hex 0xBB 0xB0.
+* time 8:00 is in Octal 100.
+* time 20:00 is in Otal 240 and in Hex 0xA0
 
 ```c#
 int msb = inData[2];
@@ -157,12 +161,12 @@ New ideas of using this Paradox integration.
   * Corridor light will be the first one. I really miss that.
   * Hall light and some others which needed temporarily. 
 
-*Garden lights are automated by Home Automation, Paradox Spectra and IR detectors.*
+*Garden lights are automated by Home Automation, Paradox Spectra and IR detectors.*</br>
 ![Garden Lights](Readme/GardenLights.png)
 #### Current integration (holy mess)
 I had the integration already but it is done in very difficult way. 
 All sensors are connected physically to MCP23017 which is a 16bit parallel I/O expansion for I2C.
-Now I can get rid of hundreds of wires to replace them just with two wires needed for COM port.</br>
+Now I can get rid of hundreds of wires to replace them just with a two wires needed for COM port.</br>
 ![M_C_P23017](Readme/MCP23017.png)
 ![M C P23017 2](Readme/MCP23017_2.png)
 ## Paradox serial output messages explained
