@@ -1,5 +1,5 @@
-# Paradox-Spectra-1738-SerialOutput
-Reverse engineering. Paradox Spectra 1738 Serial Output reading from Raspberry PI.
+# Paradox Spectra 1738 Serial Output
+Reverse engineering of Paradox Spectra 1738 Serial Output and reading it from Raspberry PI.
 
 ## Paradox Spectra 1738 serial output
 Spectra 1738 serial output is 4 bytes. Look at the tables below.
@@ -9,19 +9,19 @@ Spectra 1738 serial output is 4 bytes. Look at the tables below.
 - **Byte 3, Byte 4** are representing clock.
 
 ## Connect Paradox serial output to RaspberryPI
-Connect Raspberry PI serial input to Paradox serial output.</br> 
-As there is no information how to send commands to Paradox, only two wires needed: ground and data. 
-Data will be transmitted from Tx pin (transmit) and this needs to be connected to Raspberry Rx pin (receive).</br>
-Paradox Tx output is 5V but Raspberry Rx is only 3,3V.</br>
+Connect Paradox serial output into Raspberry PI serial input.</br> 
+As it is unknown how to send commands to Paradox only two wires needed: ground and data. 
+Data is transmitted from Paradox Tx pin (transmit) to Raspberry Rx pin (receive).</br>
+Paradox Tx output is 5V and Raspberry Rx is only 3,3V.</br>
 **DO NOT CONNECT Tx directly to Rx, this will damage your Raspberry!**</br>
-Usually recommendation is to use special 5v to 3,3v converter. As I do not have this and the current is extremely small then simple voltage divider with two resistors is also good to go.
+Usual recommendation is to use a special 5v to 3,3v converter. As I do not have this and the current is very small then simple voltage divider with two resistors is good to go.
 
 ![Spectra Layout](Readme/SpectraLayout.png)
 
 ## Read serial messages in Raspberry
 This is my very first project to deal with a COM-port and serial messages. I start at the beginning of
 creating a foreach loop to see is there any COM-ports presented in my Raspberry.
-#### Figure out Raspberry COM port
+#### Find Raspberry COM port
 This foreach loop lists all COM-ports presented in Raspberry.
 ```C
 string[] ports = SerialPort.GetPortNames();
@@ -43,8 +43,8 @@ _serialPort = new SerialPort(ComPort, baudrate);
 _serialPort.Open();
 ```
 #### Read serial messages 
-This loop is reading exactly 4 bytes messages. Data stream will be saved into byte array DataStream.
-Now the rest of the work is simple just read these individual bytes and do some smart decisions.
+This loop is reading exactly 4 bytes messages. Data stream will be saved into byte array DataStream[].
+Now the rest of the work is simple reading these bytes and to do some smart decisions. 
 ```c
 byte[] DataStream = new byte[4];
 byte index = 0;
@@ -124,6 +124,38 @@ TimeSpan time = new TimeSpan(hour, minute, 0);
 DateTime dateTime = DateTime.Now.Date.Add(time);
 Console.Write($"{dateTime:t} ");
 ```
+## Reverse engineering with oscilloscope
+This is my first experiment with serial communication. I never worked before with this old COM-technology and 
+when I started to see real packets with oscilloscope, I enjoyed this like a child.</br>
+There are some projects in GitHub related to Paradox security system but no one is for this very old system.
+The first task was to understand that all packets are exactly 4 bytes. 
+I realized immediately some data pattern when IR detectors are active. That was full of magic.
+![Oscsilloscope](Readme/oscsilloscope.png)
+![Oscsilloscope2](Readme/oscsilloscope2.png)
+
+## Security system and Home Automation
+I am going to integrate the Paradox to my Home Automation project through the COM port. 
+
+#### What is the benefit to integrate?
+Everything which is related to person presence in house can be automated. </br>
+I have implemented following scenarios.
+* Garden lights. If someone is at home then garden lights are turned on automatically. Algorithm is the following.
+  * Lights are turned on in between sunset and sunrise.
+  * Lights are turned off during sleeping time 00:00-07:00
+  * Lights are turned off if nobody is at home in 1 hour. Detected by IR detectors.
+* Entry-Exit patterns. If someone leaves or enters the house, then the direction of movement is detected. 
+* If home is secured (by Home Automation and not by Paradox), then I will get immediately notification if someone is moving in house.
+
+New ideas of using this integration.
+* Some lights in house can be turned on automatically.
+  * Corridor light is the first one. I really miss that.
+  * 
+
+#### Current integration (holy mess)
+I had the integration already but it is done in very difficult way. 
+All sensors are connected physically to MCP23017 which is a 16bit parallel I/O expansion for I2C.
+Now I can get rid of hundreds of wires to replace them just with two wires needed for COM port.
+![M_C_P23017](Readme/MCP23017.png)
 ## Paradox serial output messages explained
 
 <table>
