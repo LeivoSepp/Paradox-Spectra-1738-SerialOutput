@@ -3,6 +3,7 @@ using System.IO.Ports;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Immutable;
 
 namespace ParadoxSpectra1738SerialOutput
 {
@@ -37,44 +38,44 @@ namespace ParadoxSpectra1738SerialOutput
         }
         public static List<Event> events = new List<Event>
         {
-            new Event(){Data = "00", Category = Category.SENSOR, Name = "Zone Closed"},
-            new Event(){Data = "04", Category = Category.SENSOR, Name = "Zone Open"},
-            new Event(){Data = "08", Category = Category.STATUS, Name = "Status"},
-            new Event(){Data = "34", Category = Category.USER, Name = "Arming"},
-            new Event(){Data = "3C", Category = Category.USER, Name = "Disarming"},
-            new Event(){Data = "40", Category = Category.USER, Name = "Disarming after Alarm"},
-            new Event(){Data = "50", Category = Category.SENSOR, Name = "Zone in Alarm"},
-            new Event(){Data = "58", Category = Category.SENSOR, Name = "Zone Alarm restore"},
-            new Event(){Data = "70", Category = Category.TROUBLE, Name = "Trouble fail"},
-            new Event(){Data = "74", Category = Category.TROUBLE, Name = "Trouble back to normal"}
+            new Event(){Data = "00", EventCategory = Category.ZONE, EventName = "Zone Closed"},
+            new Event(){Data = "04", EventCategory = Category.ZONE, EventName = "Zone Open"},
+            new Event(){Data = "08", EventCategory = Category.STATUS, EventName = "Status"},
+            new Event(){Data = "34", EventCategory = Category.USER, EventName = "Arming"},
+            new Event(){Data = "3C", EventCategory = Category.USER, EventName = "Disarming"},
+            new Event(){Data = "40", EventCategory = Category.USER, EventName = "Disarming after Alarm"},
+            new Event(){Data = "50", EventCategory = Category.ZONE, EventName = "Zone in Alarm"},
+            new Event(){Data = "58", EventCategory = Category.ZONE, EventName = "Zone Alarm restore"},
+            new Event(){Data = "70", EventCategory = Category.TROUBLE, EventName = "Trouble fail"},
+            new Event(){Data = "74", EventCategory = Category.TROUBLE, EventName = "Trouble back to normal"}
         };
         public static List<Status> statuses = new List<Status>
         {
-            new Status(){Data = "01", Name = "Zones open"},
-            new Status(){Data = "11", Name = "Zones closed"},
-            new Status(){Data = "21", Name = "Alarm21/Bell"},
-            new Status(){Data = "41", Name = "Alarm41/Bell"},
-            new Status(){Data = "51", Name = "Alarm occurred during arm"},
-            new Status(){Data = "61", Name = "ArmCode61"},
-            new Status(){Data = "71", Name = "ArmCode71"},
-            new Status(){Data = "91", Name = "Disarmed"},
-            new Status(){Data = "A1", Name = "Armed"},
-            new Status(){Data = "B1", Name = "Entry delay started"},
+            new Status(){Data = "01", StatusMessage = "Zones open"},
+            new Status(){Data = "11", StatusMessage = "Zones closed"},
+            new Status(){Data = "21", StatusMessage = "Alarm21/Bell"},
+            new Status(){Data = "41", StatusMessage = "Alarm41/Bell"},
+            new Status(){Data = "51", StatusMessage = "Alarm occurred during arm"},
+            new Status(){Data = "61", StatusMessage = "ArmCode61"},
+            new Status(){Data = "71", StatusMessage = "ArmCode71"},
+            new Status(){Data = "91", StatusMessage = "Disarmed"},
+            new Status(){Data = "A1", StatusMessage = "Armed"},
+            new Status(){Data = "B1", StatusMessage = "Entry delay started"},
         };
         public static List<Trouble> troubles = new List<Trouble>
         {
-            new Trouble(){Data = "21", Name = "Battery"},
-            new Trouble(){Data = "51", Name = "Bell"}
+            new Trouble(){Data = "21", TroubleName = "Battery"},
+            new Trouble(){Data = "51", TroubleName = "Bell"}
         };
-        public static List<Message> sensors = new List<Message> {
-            new Message(){Data = "11", Name = "DOOR"},
-            new Message(){Data = "21", Name = "ENTRY/PIANO"},
-            new Message(){Data = "31", Name = "LIVING ROOM"},
-            new Message(){Data = "41", Name = "OFFICE"},
-            new Message(){Data = "51", Name = "HALL"},
-            new Message(){Data = "61", Name = "BEDROOM"},
-            new Message(){Data = "71", Name = "FIRE"},
-            new Message(){Data = "81", Name = "TECHNO"}
+        public static List<Zone> zones = new List<Zone> {
+            new Zone(){Data = "11", ZoneName = "DOOR", IsZoneOpen=false},
+            new Zone(){Data = "21", ZoneName = "ENTRY/PIANO", IsZoneOpen=false},
+            new Zone(){Data = "31", ZoneName = "LIVING ROOM", IsZoneOpen=false},
+            new Zone(){Data = "41", ZoneName = "OFFICE", IsZoneOpen=false},
+            new Zone(){Data = "51", ZoneName = "HALL", IsZoneOpen=false},
+            new Zone(){Data = "61", ZoneName = "BEDROOM", IsZoneOpen=false},
+            new Zone(){Data = "71", ZoneName = "FIRE", IsZoneOpen=false},
+            new Zone(){Data = "81", ZoneName = "TECHNO", IsZoneOpen=false}
             };
         public static void ReadMessages()
         {
@@ -110,13 +111,13 @@ namespace ParadoxSpectra1738SerialOutput
                     }
 
                     string EventID = DataStream[0].ToString("X2");
-                    string Event = events.Where(x => x.Data == EventID).Select(x => x.Name).DefaultIfEmpty($"NoName {EventID}").First();
-                    int EventCategory = events.Where(x => x.Data == EventID).Select(x => x.Category).DefaultIfEmpty(DataStream[0]).First();
+                    string Event = events.Where(x => x.Data == EventID).Select(x => x.EventName).DefaultIfEmpty($"NoName {EventID}").First();
+                    int EventCategory = events.Where(x => x.Data == EventID).Select(x => x.EventCategory).DefaultIfEmpty(DataStream[0]).First();
 
                     string MessageID = DataStream[1].ToString("X2");
                     string Message = MessageID;
 
-                    bool isZoneAction = EventCategory == Category.SENSOR;
+                    bool isZoneAction = EventCategory == Category.ZONE;
                     bool isUserAction = EventCategory == Category.USER;
                     bool isTrouble = EventCategory == Category.TROUBLE;
                     bool isStatus = EventCategory == Category.STATUS;
@@ -125,13 +126,18 @@ namespace ParadoxSpectra1738SerialOutput
                         Console.Write($" {Event}");
 
                     if (isZoneAction)
-                        Message = sensors.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
-
+                    {
+                        //save the IRState into zone's list
+                        bool IsZoneOpen = false;
+                        if (EventID == "04") IsZoneOpen = true;
+                        zones.Where(x => x.Data == MessageID).Select(x => { x.IsZoneOpen = IsZoneOpen; return x; }).ToList();
+                        Message = zones.Where(x => x.Data == MessageID).Select(x => $"{x.ZoneName} {(x.IsZoneOpen ? "Open" : "Closed")}").DefaultIfEmpty($"NoName {MessageID}").First();
+                    }
                     if (isStatus)
-                        Message = statuses.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
+                        Message = statuses.Where(x => x.Data == MessageID).Select(x => x.StatusMessage).DefaultIfEmpty($"NoName {MessageID}").First();
 
                     if (isTrouble)
-                        Message = troubles.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
+                        Message = troubles.Where(x => x.Data == MessageID).Select(x => x.TroubleName).DefaultIfEmpty($"NoName {MessageID}").First();
 
                     if (isUserAction)
                         Message = $"User:{MessageID}";
@@ -151,29 +157,30 @@ namespace ParadoxSpectra1738SerialOutput
     class Event
     {
         public string Data { get; set; }
-        public string Name { get; set; }
-        public int Category { get; set; }
+        public string EventName { get; set; }
+        public int EventCategory { get; set; }
     }
     class Category
     {
-        public const int SENSOR = 1;
+        public const int ZONE = 1;
         public const int STATUS = 2;
         public const int TROUBLE = 3;
         public const int USER = 4;
     }
-    class Message
+    class Zone
     {
         public string Data { get; set; }
-        public string Name { get; set; }
+        public string ZoneName { get; set; }
+        public bool IsZoneOpen { get; set; }
     }
     class Trouble
     {
         public string Data { get; set; }
-        public string Name { get; set; }
+        public string TroubleName { get; set; }
     }
     class Status
     {
         public string Data { get; set; }
-        public string Name { get; set; }
+        public string StatusMessage { get; set; }
     }
 }

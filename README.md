@@ -226,6 +226,12 @@ I took some pictures because very soon this mess is not exist anymore. </br>
                  <td>Statuses table</ td>  
     </tr>
     <tr>
+                 <td>0x14</ td>    
+                 <td>Unknown</ td>  
+                 <td>71</ td>    
+                 <td>Occurred exactly 00:00</ td>  
+    </tr>
+    <tr>
                  <td>0x34</ td>    
                  <td>Arming</ td>  
                  <td></ td>    
@@ -242,12 +248,6 @@ I took some pictures because very soon this mess is not exist anymore. </br>
                  <td>Disarming after Aarm</ td>  
                  <td></ td>    
                  <td>User #</ td>  
-    </tr>
-    <tr>
-                 <td>0x14</ td>    
-                 <td>Unknown</ td>  
-                 <td></ td>    
-                 <td></ td>  
     </tr>
     <tr>
                  <td>0x50</ td>    
