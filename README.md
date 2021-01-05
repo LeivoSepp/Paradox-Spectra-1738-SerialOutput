@@ -116,7 +116,7 @@ Following is the output of this program.</br>
 ![Serial Output](Readme/SerialOutput.png)
 
 ---
-## <center>Bytes 3 and Bytes 4 are octal clock</center>
+## <div align=center>Bytes 3 and Bytes 4 are octal clock</div>
 
 Nice reverse engineering task was to figure out how the clock is working. 
 This is completely useless as it reads just the time reported by Paradox panel (24h format). 
