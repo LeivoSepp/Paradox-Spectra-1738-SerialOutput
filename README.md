@@ -1,14 +1,14 @@
 # Paradox Spectra 1738 Serial Output Reverse Engineering
-Reverse engineering of Paradox Spectra 1738 Security System Serial Output and reading it from Raspberry PI.
+Reverse engineering of Paradox Spectra 1738 Security System Serial Output. Reading the serial stream with Raspberry PI.
 
-## Paradox Spectra 1738 serial output
+## <div align=center>Paradox Spectra 1738 serial output</div>
 Spectra 1738 serial output is 4 bytes. Look at the tables by the end of this doument.
 
 - **Byte 1** is an event.
 - **Byte 2** is a message like zone number, user, status, trouble info.
 - **Byte 3, Byte 4** are used for clock.
 
-## Connect Paradox serial output to Raspberry PI
+## <div align=center>Connect Paradox serial output to Raspberry PI</div>
 To read Paradox security messages by Raspberry PI we have to connect these two hardware devices.</br> 
 Both devices have a serial input/output IO (COM ports). Serial interface is using one wire to send data
 and another wire to receive data. 
@@ -22,7 +22,9 @@ As I do not have this converter and the electric current is very small then simp
 
 ![Spectra Layout](Readme/SpectraLayout.png)
 
-## Read serial messages in Raspberry
+---
+## <div align=center>Read serial messages in Raspberry </div>
+
 This is my very first project to deal with a COM-port and serial messages. Therefore I start at the beginning and
 creating a foreach loop to see is there any COM-ports presented in my Raspberry. 
 #### Find Raspberry COM port
@@ -71,7 +73,7 @@ while (true)
 }
 ```
 ---
-## <center>Byte 1</center>
+## <div align=center>Byte 1</div>
 
 Byte 1 is an event. These events are categorized based on message context. 
 * Zones: zone open, closes, alarms in zone.
@@ -90,7 +92,7 @@ bool isTrouble = EventCategory == Category.TROUBLE;
 bool isStatus = EventCategory == Category.STATUS;
 ```
 ---
-## <center>Byte 2</center> 
+## <div align=center>Byte 2</div> 
 
 Byte 2 is a message like zone number, user info, status info, trouble info.</br>
 Messages are displayed based on the event category.
