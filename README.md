@@ -30,7 +30,7 @@ This foreach loop list all available COM-ports presented by Raspberry.
 If there is no COM-port available then this have to be enabled from the Raspberry global settings raspi-config.
 Keep in mind that SerialPort is exist in System.IO.Ports whichcan be downloaded as NuGet package.
 
-```C
+```C#
 string[] ports = SerialPort.GetPortNames();
 Console.WriteLine("The following serial ports are found:");
 foreach (string port in ports)
@@ -43,7 +43,7 @@ foreach (string port in ports)
 #### Create and open COM port
 The next task is to write some lines of code to create a COM port which we can use for reading serial messages.
 
-```C
+```C#
 string ComPort = "/dev/ttyAMA0";
 int baudrate = 9600;
 Console.WriteLine($"serial: {ComPort} {baudrate}");
@@ -54,7 +54,7 @@ _serialPort.Open();
 As Paradox messages are always 4 bytes they needs to be read in batches of 4 bytes. 
 Following piece of code is doing exactly this and the data stream is saved into byte array DataStream[].
 Now the rest of the work is simple reading these bytes and do some smart decisions. 
-```c
+```C#
 byte[] DataStream = new byte[4];
 byte index = 0;
 while (true)
@@ -71,15 +71,15 @@ while (true)
 }
 ```
 ---
-#### Byte 1
----
+## <center>Byte 1</center>
+
 Byte 1 is an event. These events are categorized based on message context. 
 * Zones: zone open, closes, alarms in zone.
 * Statuses: all kind of messages related arming, disarming etc.
 * Users: which user code has been used for arming/disarming.
 * Troubles: some trouble messages, havent seen any.
 
-```c
+```C#
 string EventID = DataStream[0].ToString("X2");
 string Event = events.Where(x => x.Data == EventID).Select(x => x.Name).DefaultIfEmpty($"NoName {EventID}").First();
 int EventCategory = events.Where(x => x.Data == EventID).Select(x => x.Category).DefaultIfEmpty(DataStream[0]).First();
@@ -90,11 +90,11 @@ bool isTrouble = EventCategory == Category.TROUBLE;
 bool isStatus = EventCategory == Category.STATUS;
 ```
 ---
-#### Byte 2
----
+## <center>Byte 2</center> 
+
 Byte 2 is a message like zone number, user info, status info, trouble info.</br>
 Messages are displayed based on the event category.
-```c
+```C#
 if (!isStatus)
     Console.Write($" {Event}");
 
@@ -116,8 +116,8 @@ Following is the output of this program.</br>
 ![Serial Output](Readme/SerialOutput.png)
 
 ---
-#### Bytes 3 and Bytes 4 are octal clock
----
+## <center>Bytes 3 and Bytes 4 are octal clock</center>
+
 Nice reverse engineering task was to figure out how the clock is working. 
 This is completely useless as it reads just the time reported by Paradox panel (24h format). 
 It is useless because after integration the clock is managed anyway by Rasperry PI.
@@ -136,7 +136,7 @@ Some time examples:
 
 The final solution is a genius as it has just two lines of code (hours and minutes) with little mathematics. </br>
 
-```c#
+```C#
 int msb = inData[2];
 int lsb = inData[3];
 
@@ -187,7 +187,8 @@ With the new serial port connection I can get rid of hundreds of wires to replac
 I took some pictures because very soon this mess is not exist anymore. </br>
 
 ![M_C_P23017](Readme/MCP23017.png)
-![M C P23017 2](Readme/MCP23017_2.png)
+![M C P23017](Readme/MCP23017.jpg)
+![M C P23017 1](Readme/MCP23017_1.jpg)
 ## Paradox serial output messages explained
 
 <table>
