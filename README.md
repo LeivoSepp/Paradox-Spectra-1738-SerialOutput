@@ -253,15 +253,33 @@ I took some pictures because very soon this mess is not exist anymore. </br>
                  <td>User #</ td>  
     </tr>
     <tr>
+                 <td>0x44</ td>    
+                 <td>??</ td>  
+                 <td>0x11</ td>    
+                 <td>Alarm memory?</ td>  
+    </tr>
+    <tr>
                  <td>0x50</ td>    
                  <td>Zone in Alarm</ td>  
                  <td></ td>    
                  <td>Zones table</ td>  
     </tr>
     <tr>
+                 <td>0x54</ td>    
+                 <td>Fire Alarm</ td>  
+                 <td>0x71</ td>    
+                 <td>Zones table</ td>  
+    </tr>
+    <tr>
                  <td>0x58</ td>    
                  <td>Zone Alarm restore</ td>  
                  <td></ td>    
+                 <td>Zones table</ td>  
+    </tr>
+    <tr>
+                 <td>0x5C</ td>    
+                 <td>Fire Alarm restore</ td>  
+                 <td>0x71</ td>    
                  <td>Zones table</ td>  
     </tr>
     <tr>
@@ -276,6 +294,13 @@ I took some pictures because very soon this mess is not exist anymore. </br>
                  <td></ td>    
                  <td>Troubles table</ td>  
     </tr>
+    <tr>
+                 <td>0x78</ td>    
+                 <td>Installer mode</ td>  
+                 <td>0x41</br>0x51</ td>    
+                 <td>Enter Installer mode</br>Exit installer mode</ td>  
+    </tr>
+
 </table>
 
 <table>
@@ -297,6 +322,10 @@ I took some pictures because very soon this mess is not exist anymore. </br>
     <tr>
                  <td>0x21</ td>    
                  <td>Alarm/Bell?</ td>  
+    </tr>
+    <tr>
+                 <td>0x31</ td>    
+                 <td>Silent alarm?</ td>  
     </tr>
     <tr>
                  <td>0x41</ td>    
@@ -386,6 +415,11 @@ I took some pictures because very soon this mess is not exist anymore. </br>
                  <td>0x81</ td>    
                  <td>Zone 8</ td>  
     </tr>
+    <tr>
+                 <td>0x91</ td>    
+                 <td>Zone 9</ td>  
+    </tr>
+
 </table>
 
 ### Resources used during the project

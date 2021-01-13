@@ -44,16 +44,21 @@ namespace ParadoxSpectra1738SerialOutput
             new Event(){Data = "34", EventCategory = Category.USER, EventName = "Arming"},
             new Event(){Data = "3C", EventCategory = Category.USER, EventName = "Disarming"},
             new Event(){Data = "40", EventCategory = Category.USER, EventName = "Disarming after Alarm"},
+            new Event(){Data = "44", EventCategory = Category.UNKNOWN, EventName = "Unknown_44"},
             new Event(){Data = "50", EventCategory = Category.ZONE, EventName = "Zone in Alarm"},
+            new Event(){Data = "54", EventCategory = Category.ZONE, EventName = "24h Zone in Alarm"},
             new Event(){Data = "58", EventCategory = Category.ZONE, EventName = "Zone Alarm restore"},
+            new Event(){Data = "5C", EventCategory = Category.ZONE, EventName = "24h Zone Alarm rstore"},
             new Event(){Data = "70", EventCategory = Category.TROUBLE, EventName = "Trouble fail"},
-            new Event(){Data = "74", EventCategory = Category.TROUBLE, EventName = "Trouble back to normal"}
+            new Event(){Data = "74", EventCategory = Category.TROUBLE, EventName = "Trouble back to normal"},
+            new Event(){Data = "78", EventCategory = Category.INSTALLER, EventName = "Installer mode"}
         };
         public static List<Status> statuses = new List<Status>
         {
             new Status(){Data = "01", StatusMessage = "Zones open"},
             new Status(){Data = "11", StatusMessage = "Zones closed"},
             new Status(){Data = "21", StatusMessage = "Alarm21/Bell"},
+            new Status(){Data = "31", StatusMessage = "Silent alarm"},
             new Status(){Data = "41", StatusMessage = "Alarm41/Bell"},
             new Status(){Data = "51", StatusMessage = "Alarm occurred during arm"},
             new Status(){Data = "61", StatusMessage = "ArmCode61"},
@@ -67,15 +72,21 @@ namespace ParadoxSpectra1738SerialOutput
             new Trouble(){Data = "21", TroubleName = "Battery"},
             new Trouble(){Data = "51", TroubleName = "Bell"}
         };
+        public static List<Installer> installers = new List<Installer>
+        {
+            new Installer(){Data = "41", InstallerMessage = "Enter installer mode"},
+            new Installer(){Data = "51", InstallerMessage = "Exit installer mode"}
+        };
         public static List<Zone> zones = new List<Zone> {
             new Zone(){Data = "11", ZoneName = "DOOR", IsZoneOpen=false},
-            new Zone(){Data = "21", ZoneName = "ENTRY/PIANO", IsZoneOpen=false},
+            new Zone(){Data = "21", ZoneName = "ENTRY", IsZoneOpen=false},
             new Zone(){Data = "31", ZoneName = "LIVING ROOM", IsZoneOpen=false},
             new Zone(){Data = "41", ZoneName = "OFFICE", IsZoneOpen=false},
             new Zone(){Data = "51", ZoneName = "HALL", IsZoneOpen=false},
             new Zone(){Data = "61", ZoneName = "BEDROOM", IsZoneOpen=false},
             new Zone(){Data = "71", ZoneName = "FIRE", IsZoneOpen=false},
-            new Zone(){Data = "81", ZoneName = "TECHNO", IsZoneOpen=false}
+            new Zone(){Data = "81", ZoneName = "TECHNO", IsZoneOpen=false},
+            new Zone(){Data = "91", ZoneName = "PIANO", IsZoneOpen=false}
             };
         public static void ReadMessages()
         {
@@ -121,6 +132,7 @@ namespace ParadoxSpectra1738SerialOutput
                     bool isUserAction = EventCategory == Category.USER;
                     bool isTrouble = EventCategory == Category.TROUBLE;
                     bool isStatus = EventCategory == Category.STATUS;
+                    bool isInstaller = EventCategory == Category.INSTALLER;
 
                     if (!isStatus)
                         Console.Write($" {Event}");
@@ -138,6 +150,9 @@ namespace ParadoxSpectra1738SerialOutput
 
                     if (isTrouble)
                         Message = troubles.Where(x => x.Data == MessageID).Select(x => x.TroubleName).DefaultIfEmpty($"NoName {MessageID}").First();
+
+                    if (isInstaller)
+                        Message = installers.Where(x => x.Data == MessageID).Select(x => x.InstallerMessage).DefaultIfEmpty($"NoName {MessageID}").First();
 
                     if (isUserAction)
                         Message = $"User:{MessageID}";
@@ -166,6 +181,8 @@ namespace ParadoxSpectra1738SerialOutput
         public const int STATUS = 2;
         public const int TROUBLE = 3;
         public const int USER = 4;
+        public const int INSTALLER = 5;
+        public const int UNKNOWN = 6;
     }
     class Zone
     {
@@ -183,4 +200,10 @@ namespace ParadoxSpectra1738SerialOutput
         public string Data { get; set; }
         public string StatusMessage { get; set; }
     }
+    class Installer
+    {
+        public string Data { get; set; }
+        public string InstallerMessage { get; set; }
+    }
+
 }
