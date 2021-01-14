@@ -181,12 +181,12 @@ New ideas of using this Paradox integration.
 
 *Garden lights are automated by Home Automation, Paradox Spectra and IR detectors.*<br/>
 ![Garden Lights](Readme/GardenLights.png)
-#### Current integration (holy mess)
-The current integration is done in very difficult way. 
+#### Historical integration (holy mess)
+The historical integration was done in very difficult way. 
 All sensors are connected physically to MCP23017 which is a 16 bit parallel I/O expansion.
 MCP23017 is connected to Raspberry by I2C protocol. Program is looping these ports in every second to find IR detectors interruptions.<br/>
 With the new serial port connection I can get rid of hundreds of wires to replace them just with two wires. 
-I took some pictures because very soon this mess is not exist anymore. <br/>
+I took some pictures before disconnecting this old mess. <br/>
 
 ![M_C_P23017](Readme/MCP23017.png)
 ![M C P23017](Readme/MCP23017.jpg)
