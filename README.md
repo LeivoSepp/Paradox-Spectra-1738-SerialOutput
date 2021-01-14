@@ -169,7 +169,7 @@ Everything which is related to human presence and location in house can be autom
 I have already implemented following scenarios.
 * **Garden lights.** If someone is at home then garden lights are turned on automatically. Algorithm is the following.
   * Lights are turned on in between sunset and sunrise.
-  * Lights are turned off during sleeping time 00:00-07:00
+  * Lights are turned off during sleeping time 00:00_07:00
   * Lights are turned off if nobody is at home in 1 hour. Detected by IR detectors.
 * **Entry-Exit patterns.** If someone leaves or enters the house then the direction of movement is detected and reported to home automation. 
 * **Security messages.** If home is secured (by Home Automation and not by the Paradox) I will get immediately notification if someone is moving in house.
@@ -206,11 +206,11 @@ I took some pictures because very soon this mess is not exist anymore. <br/>
 |0x??|Bypass programming||Access Codes|
 |0x??|User Activated PGM||Access Codes|
 |0x??|Zone with delay transmission option enabled is breached||Zones table|
-|0x34<br/>0x35<br/>0x36<br/>0x37|Arm|<span style="white-space: nowrap;">0x11_0xF1</span><br/>0x01-0xF1<br/>0x01-0xF1<br/>0x01|Access Codes 001-015<br/>Access Codes 016-031<br/>Access Codes 032-047<br/>Access Code 048|
+|0x34<br/>0x35<br/>0x36<br/>0x37|Arm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
 |0x??|Special arm||Special arm table|
-|0x3C<br/>0x3D<br/>0x3E<br/>0x3F|Disarm|0x11-0xF1<br/>0x01-0xF1<br/>0x01-0xF1<br/>0x01|Access Codes 001-015<br/>Access Codes 016-031<br/>Access Codes 032-047<br/>Access Code 048|
-|0x40<br/>0x41<br/>0x42<br/>0x43|Disarm after alarm|0x11-0xF1<br/>0x01-0xF1<br/>0x01-0xF1<br/>0x01|Access Codes 001-015<br/>Access Codes 016-031<br/>Access Codes 032-047<br/>Access Code 048|
-|0x44<br/>0x45<br/>0x46<br/>0x47|Cancel alarm|0x11-0xF1<br/>0x01-0xF1<br/>0x01-0xF1<br/>0x01|Access Codes 001-015<br/>Access Codes 016-031<br/>Access Codes 032-047<br/>Access Code 048|
+|0x3C<br/>0x3D<br/>0x3E<br/>0x3F|Disarm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
+|0x40<br/>0x41<br/>0x42<br/>0x43|Disarm after alarm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
+|0x44<br/>0x45<br/>0x46<br/>0x47|Cancel alarm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
 |0x??|Special Disarm||Special Disarm table|
 |0x??|Zone Bypassed on arming||Zones table|
 |0x50|Zone in alarm||Zones table|
@@ -319,7 +319,7 @@ https://www.instructables.com/Serial-Port-Programming-With-NET/
 Serial Communication with .NET Core 3.0 on RPi Linux.
 Good build and publish scripts.<br/>
 https://dev.to/azure/net-core-iot-raspberry-pi-linux-and-azure-iot-hub-learn-how-to-build-deploy-and-debug-d1f <br/>
-https://www.hackster.io/sxwei123/serial-communication-with-net-core-3-0-on-rpi-linux-0f2ed4
+https://www.hackster.io/sxwei123/serial-communication-with-net-core-3_0-on-rpi-linux_0f2ed4
 
 Overall serial communication explanation.<br/>
 https://learn.sparkfun.com/tutorials/serial-communication/all
