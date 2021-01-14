@@ -53,15 +53,23 @@ _serialPort = new SerialPort(ComPort, baudrate);
 _serialPort.Open();
 ```
 #### Read serial messages 
-As Paradox messages are always 4 bytes they needs to be read in batches of 4 bytes. 
-Following piece of code is doing exactly this and the data stream is saved into byte array DataStream[].
-Now the rest of the work is simple reading these bytes and do some smart decisions. 
+As Paradox message length is exactly 4 bytes they needs to be read in batches of 4 bytes. 
+Following piece of code is doing exactly this and the data stream is saved into byte array `DataStream[]`.
+
+The rest of the work is simple reading these bytes and do some smart decisions. What does each of the byte
+are doing is explained in this project.
+
+What I dont know is why the following code is not working without `try catch` statement. 
+But actually I dont care unless the code is working.
+
 ```C#
 byte[] DataStream = new byte[4];
 byte index = 0;
 while (true)
 {
-     //Spectra message output is always 4 bytes
+try
+{
+    //Spectra message output is always 4 bytes
     if (_serialPort.BytesToRead < 4)
     {
         index = 0;
@@ -71,127 +79,170 @@ while (true)
         }
     }
 }
+catch (Exception e) { Console.WriteLine($"Timeout {e}"); }
+}
 ```
 ---
-## <div align=center>Byte 1</div>
+## <div align=center>Byte 1: Event</div>
 
-Byte 1 is an event. These events are categorized based on message context. 
-* Zones: zone open, closes, alarms in zone.
-* Statuses: all kind of messages related arming, disarming etc.
-* Users: which user code has been used for arming/disarming.
-* Troubles: some trouble messages, havent seen any.
+Byte 1 is an event. Each event have a subcategory which is a byte2. There are many events and they can 
+be categorized into 10 category like zones, troubles, statuses etc.
+
+Within deeper reverse engineering I figured out that each event (or event group like different Access Codes) 
+will start after 4 bytes. After realizing that pattern the rest of the work was relatively simple to map all events with correct codes.
+
+Each of the category has it's own boolean to identity correct subcategory.
 
 ```C#
-string EventID = DataStream[0].ToString("X2");
-string Event = events.Where(x => x.Data == EventID).Select(x => x.Name).DefaultIfEmpty($"NoName {EventID}").First();
-int EventCategory = events.Where(x => x.Data == EventID).Select(x => x.Category).DefaultIfEmpty(DataStream[0]).First();
+string Byte1id = DataStream[0].ToString("X2");
+string Event = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventName).DefaultIfEmpty($"Event_{Byte1id}").First();
+int EventCategory = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventCategory).DefaultIfEmpty(DataStream[0]).First();
 
-bool isZoneAction = EventCategory == Category.SENSOR;
-bool isUserAction = EventCategory == Category.USER;
-bool isTrouble = EventCategory == Category.TROUBLE;
+bool isZoneEvent = EventCategory == Category.ZONE;
 bool isStatus = EventCategory == Category.STATUS;
+bool isTrouble = EventCategory == Category.TROUBLE;
+bool isAccessCode = EventCategory == Category.ACCESS_CODE;
+bool isSpecialAlarm = EventCategory == Category.SPECIAL_ALARM;
+bool isSpecialArm = EventCategory == Category.SPECIAL_ARM;
+bool isSpecialDisarm = EventCategory == Category.SPECIAL_DISARM;
+bool isNonReportEvents = EventCategory == Category.NON_REPORT_EVENTS;
+bool isSpecialReport = EventCategory == Category.SPECIAL_REPORT;
+bool isRemoteControl = EventCategory == Category.REMOTE_CONTROL;
 ```
 ---
-## <div align=center>Byte 2</div> 
+## <div align=center>Byte 2: Sub-Category</div> 
 
-Byte 2 is a message like zone number, user info, status info, trouble info.<br/>
-Messages are displayed based on the event category.
+Byte 2 is a category like zone number, access code, status info, trouble info, some sort of reporting etc.
+
+All the subcategories are explained below in the table. 
+The table has a complete set of subcategories what Paradox Spectra 1738 can report.
+This demo project will print all the events and subcategories. Each bcategory has its own list.
 ```C#
-if (!isStatus)
-    Console.Write($" {Event}");
+if (isStatus) Message = PartitionStatuses.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Status_{Byte2id}").First();
+if (isTrouble) Message = SystemTroubles.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Trouble_{Byte2id}").First();
+if (isSpecialAlarm) Message = SpecialAlarms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialAlarm_{Byte2id}").First();
+if (isSpecialArm) Message = SpecialArms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialArm_{Byte2id}").First();
+if (isSpecialDisarm) Message = SpecialDisarms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialDisarm_{Byte2id}").First();
+if (isNonReportEvents) Message = NonReportableEvents.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"NonReportEvent_{Byte2id}").First();
+if (isSpecialReport) Message = SpecialReportings.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialReporting_{Byte2id}").First();
 
-if (isZoneAction)
-    Message = sensors.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
+Console.Write($"{Event}, {Message}");
+Console.WriteLine();
 
-if (isStatus)
-    Message = statuses.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
-
-if (isTrouble)
-    Message = troubles.Where(x => x.Data == MessageID).Select(x => x.Name).DefaultIfEmpty($"NoName {MessageID}").First();
-
-if (isUserAction)
-    Message = $"User:{MessageID}";
-
-Console.Write($" {Message}");
 ```
-Following is the output of this program.<br/>
-![Serial Output](Readme/SerialOutput.png)
+
+There are two special subcategories Zones and Access Codes.
+
+Zones list has two additional attributes `ZoneEventTime` and boolean `IsZoneOpen` to determine if the zone is open or closed.
+These values will be written back to the list every time when the zone accessed.
+```C#
+if (isZoneEvent)
+{
+    //save the IRState into zone's list
+    bool IsZoneOpen = false;
+    if (Byte1id == "04") IsZoneOpen = true;
+    //update existing list with the IR statuses and activating/closing time
+    Zones.Where(x => x.Byte2 == Byte2id).Select(x => { x.IsZoneOpen = IsZoneOpen; x.ZoneEventTime = DateTimeOffset.Now; return x; }).ToList();
+    Message = Zones.Where(x => x.Byte2 == Byte2id).Select(x => $"{x.ZoneName} {(x.IsZoneOpen ? "Open" : "Closed")}").DefaultIfEmpty($"Zone_{Byte2id}").First();
+}
+
+```
+
+Access Codes are second special list as they are numbered from 001-048 where first three are master codes
+and the last one is special Duress Code (to disarm building and send quiet alarm). These 48 codes are used in block
+of event and they takes 4 bytes. For example arming Access Codes are events 0x34 0x35 0x36 0x37. 
+Each of the event number will have it's own subcategory with defined amount of User Access codes. 
+
+Example: Arm event 0x34 have subcategory with numbers 0x11 0x21 0x31 ... 0xF1 and each of the subcategory number represents one Access Codes 001...015.
+
+Example 2: Disarm event 0x3F has only one subcategory with a number 0x01 which represents Access Code 048 (Duress Code).
+
+The method `GetAccessCode(Byte1id, Byte2id)` is calculating correct User Access code.
+```C#
+public static string GetAccessCode(string Byte1, string Byte2)
+{
+    int count = 0;
+    bool found = false;
+    string[] AccessCodeStart = new string[6] { "28", "2C", "34", "3C", "40", "44" };
+    for (int i = 0; i < AccessCodeStart.Length; i++)
+    {
+        var startCode = Convert.ToInt32(AccessCodeStart[i], 16);
+        for (int j = 0; j < 4; j++)
+        {
+            var code = (startCode + j).ToString("X2");
+            if (Byte1 == code)
+            {
+                count = j;
+                found = true;
+                break;
+            }
+        }
+        if (found) break;
+    }
+    var byte2 = Convert.ToInt32(Byte2, 16);
+    int output = byte2 / 16 + count * 16;
+    string AccessCode = output < 10 ? $"User Code 00{output}" : $"User Code 0{output}";
+    if (count == 0)
+    {
+        switch (output)
+        {
+            case 1:
+                AccessCode = "Master code";
+                break;
+            case 2:
+                AccessCode = "Master Code 1";
+                break;
+            case 3:
+                AccessCode = "Master Code 2";
+                break;
+        }
+    }
+    if (count == 3)
+        AccessCode = "Duress Code";
+    return AccessCode;
+}
+```
+
+Following is the output of this program.
+
+![Serial Output1](Readme/SerialOutput1.png)
 
 ---
-## <div align=center>Bytes 3 and Bytes 4 are octal clock</div>
+## <div align=center>Bytes 3 and 4: Octal Clock</div>
 
-Nice reverse engineering task was to figure out how the clock is working. 
-This is completely useless as it reads just the time reported by Paradox panel (24h format). 
-It is useless because after integration the clock is managed anyway by Rasperry PI.
-Still, to solve this mathemathical clock challenge I built first the clock generator.
-During this work I realized that the clock is based on octal numeric system. 
+One of the challenging reverse engineering task was to figure out how the clock is working. 
+It was an interesting mathemathical challenge.
+
+The actual outcome of this task is completely useless as it reads just the time reported by Paradox panel (24h format). 
+After integration with Home Automation the clock is managed anyway by Rasperry PI and will taken and sychronized from the internet. 
+
+I started to solve it as this kind of unknown things are very interesting. I know that these two bytes has to be a clock but I dont know how. 
+To solve this mathemathical clock challenge the first task was to build the clock generator.
+
+During the calculator building I realized that the solution is based on octal numeric system. 
 Huhh, crazy thing. Do you know what is Octal numeric system? The numbers are going up only to 7 and after that comes 10. 
 >Octal 0,1,2,3,4,5,6,7,10,11,12,13,14,15,16,17 ...
 
-The Octal Clock project with the generator.<br/>
-https://github.com/LeivoSepp/Octal-Clock-Two-Bytes-24h <br/>
+This is my project of the Octal Clock with the generator.<br/>
+https://github.com/LeivoSepp/Octal-Clock-Two-Bytes-24h 
 
 Some time examples:
 * time 23:59 is in Octal 273 260 and in Hex 0xBB 0xB0.
 * time 8:00 is in Octal 100 and in Hex 0x08.
 * time 20:00 is in Otal 240 and in Hex 0xA0.
 
-The final solution is a genius as it has just two lines of code (hours and minutes) with little mathematics. <br/>
+The final solution is a geniusly simple as it has just two lines of code (hours and minutes) with a little mathematics.
 
 ```C#
-int msb = inData[2];
-int lsb = inData[3];
+int msb = DataStream[2];
+int lsb = DataStream[3];
 
-//thats a clock, nice reverse engineering from octal logic
+//thats a clock, nice octal numeric system reverse engineering 
 int hour = msb / 8;
 int minute = msb % 8 * 16 + lsb / 16;
-
-TimeSpan time = new TimeSpan(hour, minute, 0);
-DateTime dateTime = DateTime.Now.Date.Add(time);
-Console.Write($"{dateTime:t} ");
 ```
-## Reverse engineering with oscilloscope
-This is my first experiment with serial communication. I never worked before with the old COM-technology.
-I connected my digital oscsilloscope directly to Paradox Tx serial output.
-When I finally figured out which pin is the Txand and started to see real packets on my laptop, I enjoyed this like a child.<br/>
-There are some projects in GitHub related to Paradox security system but no one is for this 20 years old system.
-The first task was to understand that all packets are exactly 4 bytes. 
-I realized very quickly some data patterns when IR detectors are active. <br/>
-**That was like a magic.**
-![Oscsilloscope](Readme/oscsilloscope.png)
-![Oscsilloscope2](Readme/oscsilloscope2.png)
 
-## Security system and Home Automation
-The next task is to integrate the Paradox to Home Automation through the COM port. 
-
-#### What is the benefit of the integration?
-Everything which is related to human presence and location in house can be automated. <br/>
-I have already implemented following scenarios.
-* **Garden lights.** If someone is at home then garden lights are turned on automatically. Algorithm is the following.
-  * Lights are turned on in between sunset and sunrise.
-  * Lights are turned off during sleeping time 00:00_07:00
-  * Lights are turned off if nobody is at home in 1 hour. Detected by IR detectors.
-* **Entry-Exit patterns.** If someone leaves or enters the house then the direction of movement is detected and reported to home automation. 
-* **Security messages.** If home is secured (by Home Automation and not by the Paradox) I will get immediately notification if someone is moving in house.
-
-New ideas of using this Paradox integration.
-* Some lights can be turned on/off automatically in house.
-  * Corridor light will be the first one. I really miss that.
-  * Hall light and some others which needs to be turned on temporarily. 
-
-*Garden lights are automated by Home Automation, Paradox Spectra and IR detectors.*<br/>
-![Garden Lights](Readme/GardenLights.png)
-#### Historical integration (holy mess)
-The historical integration was done in very difficult way. 
-All sensors are connected physically to MCP23017 which is a 16 bit parallel I/O expansion.
-MCP23017 is connected to Raspberry by I2C protocol. Program is looping these ports in every second to find IR detectors interruptions.<br/>
-With the new serial port connection I can get rid of hundreds of wires to replace them just with two wires. 
-I took some pictures before disconnecting this old mess. <br/>
-
-![M_C_P23017](Readme/MCP23017.png)
-![M C P23017](Readme/MCP23017.jpg)
-![M C P23017 1](Readme/MCP23017_1.jpg)
-## Paradox serial output messages (complete table, all codes!)
+## Paradox serial output messages with all codes
 
 |Byte_1<br/>Hex|Event|Byte_2<br/>Hex|Sub-Group|
 |---|---|---|---|
@@ -250,6 +301,60 @@ I took some pictures before disconnecting this old mess. <br/>
 |0xD1|Zone 13|
 |0xE1|Zone 14|
 
+
+
+## Reverse engineering with oscilloscope
+This is my first experiment with serial communication. I never worked before with COM-technology.
+
+First task was to connect my digital oscsilloscope directly to Paradox Tx serial output.
+When I figured out which pin is the Tx and started to see real packets on my laptop screen I enjoyed this like a child.
+The next task was to understand the packets size and they were exactly 4 bytes. 
+
+This was my new toy. I was asking my wife to open and close the door, 
+move around different rooms and I was just sitting in front of the screen and looking the packets.
+![Oscsilloscope2](Readme/oscsilloscope2.png)
+
+I realized very quickly some data patterns of opening and closing sensors. Initially I was thinking that bytes 3-4
+doesn't mean anything as they changed with no pattern at all. Somehow I started to look also watch and I saw that they are changing in every minute.
+
+**This was the magic.**
+![Oscsilloscope](Readme/oscsilloscope.png)
+
+## Security system and Home Automation
+The next task is to integrate the Paradox with my Home Automation Raspberry PI through the COM port. 
+
+#### What is the benefit of the integration?
+Everything can be automated which is related to human presence in house.
+
+I have already implemented following scenarios.
+* **Garden lights.** If someone is at home then garden lights are turned on automatically. Algorithm is the following.
+  * Lights are turned on in between sunset and sunrise.
+  * Lights are turned off during sleeping time 00:00_07:00
+  * Lights are turned off if nobody is at home in 1 hour. Detected by IR detectors.
+* **Entry-Exit patterns.** If someone leaves or enters the house then the direction of movement is detected and reported to home automation. 
+* **Security messages.** If home is secured (by Home Automation and not by the Paradox) I will get immediately notification if someone is moving in house.
+
+New ideas of using this Paradox integration.
+* Some lights can be turned on/off automatically in house.
+  * Corridor light will be the first one. I really miss that.
+  * Hall light and some others which needs to be turned on temporarily. 
+
+*Automatic garden lights by Home Automation based on Paradox Spectra and IR detectors.*
+![Garden Lights](Readme/GardenLights.png)
+
+#### Historical integration (holy mess)
+The historical integration was done in very difficult way. 
+
+All sensors are connected physically to IC MCP23017 which is a 16 bit parallel I/O expansion.
+MCP23017 was connected to Raspberry by I2C protocol. 
+Program was looping these ports in every second to find IR detectors interruptions.
+
+With the new serial port connection I can get rid of hundreds of wires to replace them just with two wires. 
+I took some pictures of nice this old mess. It was working already many years like this. 
+
+![M_C_P23017](Readme/MCP23017.png)
+![M C P23017](Readme/MCP23017.jpg)
+![M C P23017 1](Readme/MCP23017_1.jpg)
 
 ### Resources used during the project
 Serial Port Programming With .NET.

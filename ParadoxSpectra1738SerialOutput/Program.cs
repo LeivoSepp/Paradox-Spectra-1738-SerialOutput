@@ -73,7 +73,7 @@ namespace ParadoxSpectra1738SerialOutput
                 }
 
                 string Byte1id = DataStream[0].ToString("X2");
-                string Event = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventName).DefaultIfEmpty($"Event?_{Byte1id}").First();
+                string Event = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventName).DefaultIfEmpty($"Event_{Byte1id}").First();
                 int EventCategory = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventCategory).DefaultIfEmpty(DataStream[0]).First();
                 string Byte2id = DataStream[1].ToString("X2");
                 string Message = Byte2id;
