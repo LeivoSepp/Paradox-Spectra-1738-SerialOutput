@@ -194,7 +194,7 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 ## Paradox serial output messages explained
 
 |Byte_1</br>Hex|Event|Byte_2</br>Hex|Sub-Group|Byte_3|Byte_4|
-|---|---|---|---|---|---|
+|---|---|-------------|---|---|---|
 |0x00|Zone OK||Zones table|   |   |
 |0x04|Zone Open||Zones table|   |   |
 |0x08|Partition Status||Statuses table|
