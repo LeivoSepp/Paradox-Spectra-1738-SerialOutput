@@ -206,7 +206,7 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 |0x??|Bypass programming||Access Codes|
 |0x??|User Activated PGM||Access Codes|
 |0x??|Zone with delay transmission option enabled is breached||Zones table|
-|0x34</br>0x35</br>0x36</br>0x37|Arm|<nobr>0x11-0xF1</nobr></br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
+|0x34</br>0x35</br>0x36</br>0x37|Arm|<span style="white-space: nowrap;">0x11-0xF1</span></br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
 |0x??|Special arm||Special arm table|
 |0x3C</br>0x3D</br>0x3E</br>0x3F|Disarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
 |0x40</br>0x41</br>0x42</br>0x43|Disarm after alarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
