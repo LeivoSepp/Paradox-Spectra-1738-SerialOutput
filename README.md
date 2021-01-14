@@ -9,14 +9,14 @@ Spectra 1738 serial output is 4 bytes. Look at the tables by the end of this dou
 - **Byte 3, Byte 4** are used for clock.
 
 ## <div align=center>Connect Paradox serial output to Raspberry PI</div>
-To read Paradox security messages by Raspberry PI we have to connect these two hardware devices.</br> 
+To read Paradox security messages by Raspberry PI we have to connect these two hardware devices.<br/> 
 Both devices have a serial input/output IO (COM ports). Serial interface is using one wire to send data
 and another wire to receive data. 
 As it is unknown how to send commands to Paradox we need only one wire for communication. 
 Obviously we need additional wire for ground connection.
-Data transmitted from Paradox Tx pin (transmit) to Raspberry Rx pin (receive).</br>
-As Paradox Tx output is 5V and Raspberry Rx is 3,3V we can't connect them directly.</br>
-**DO NOT CONNECT Tx directly to Rx, this will damage your Raspberry!**</br>
+Data transmitted from Paradox Tx pin (transmit) to Raspberry Rx pin (receive).<br/>
+As Paradox Tx output is 5V and Raspberry Rx is 3,3V we can't connect them directly.<br/>
+**DO NOT CONNECT Tx directly to Rx, this will damage your Raspberry!**<br/>
 Usual recommendation is to use a special 5v to 3,3v converter. 
 As I do not have this converter and the electric current is very small then simple voltage divider with a two resistors is good to go.
 
@@ -94,7 +94,7 @@ bool isStatus = EventCategory == Category.STATUS;
 ---
 ## <div align=center>Byte 2</div> 
 
-Byte 2 is a message like zone number, user info, status info, trouble info.</br>
+Byte 2 is a message like zone number, user info, status info, trouble info.<br/>
 Messages are displayed based on the event category.
 ```C#
 if (!isStatus)
@@ -114,7 +114,7 @@ if (isUserAction)
 
 Console.Write($" {Message}");
 ```
-Following is the output of this program.</br>
+Following is the output of this program.<br/>
 ![Serial Output](Readme/SerialOutput.png)
 
 ---
@@ -128,15 +128,15 @@ During this work I realized that the clock is based on octal numeric system.
 Huhh, crazy thing. Do you know what is Octal numeric system? The numbers are going up only to 7 and after that comes 10. 
 >Octal 0,1,2,3,4,5,6,7,10,11,12,13,14,15,16,17 ...
 
-The Octal Clock project with the generator.</br>
-https://github.com/LeivoSepp/Octal-Clock-Two-Bytes-24h </br>
+The Octal Clock project with the generator.<br/>
+https://github.com/LeivoSepp/Octal-Clock-Two-Bytes-24h <br/>
 
 Some time examples:
 * time 23:59 is in Octal 273 260 and in Hex 0xBB 0xB0.
 * time 8:00 is in Octal 100 and in Hex 0x08.
 * time 20:00 is in Otal 240 and in Hex 0xA0.
 
-The final solution is a genius as it has just two lines of code (hours and minutes) with little mathematics. </br>
+The final solution is a genius as it has just two lines of code (hours and minutes) with little mathematics. <br/>
 
 ```C#
 int msb = inData[2];
@@ -153,10 +153,10 @@ Console.Write($"{dateTime:t} ");
 ## Reverse engineering with oscilloscope
 This is my first experiment with serial communication. I never worked before with the old COM-technology.
 I connected my digital oscsilloscope directly to Paradox Tx serial output.
-When I finally figured out which pin is the Txand and started to see real packets on my laptop, I enjoyed this like a child.</br>
+When I finally figured out which pin is the Txand and started to see real packets on my laptop, I enjoyed this like a child.<br/>
 There are some projects in GitHub related to Paradox security system but no one is for this 20 years old system.
 The first task was to understand that all packets are exactly 4 bytes. 
-I realized very quickly some data patterns when IR detectors are active. </br>
+I realized very quickly some data patterns when IR detectors are active. <br/>
 **That was like a magic.**
 ![Oscsilloscope](Readme/oscsilloscope.png)
 ![Oscsilloscope2](Readme/oscsilloscope2.png)
@@ -165,7 +165,7 @@ I realized very quickly some data patterns when IR detectors are active. </br>
 The next task is to integrate the Paradox to Home Automation through the COM port. 
 
 #### What is the benefit of the integration?
-Everything which is related to human presence and location in house can be automated. </br>
+Everything which is related to human presence and location in house can be automated. <br/>
 I have already implemented following scenarios.
 * **Garden lights.** If someone is at home then garden lights are turned on automatically. Algorithm is the following.
   * Lights are turned on in between sunset and sunrise.
@@ -179,21 +179,21 @@ New ideas of using this Paradox integration.
   * Corridor light will be the first one. I really miss that.
   * Hall light and some others which needs to be turned on temporarily. 
 
-*Garden lights are automated by Home Automation, Paradox Spectra and IR detectors.*</br>
+*Garden lights are automated by Home Automation, Paradox Spectra and IR detectors.*<br/>
 ![Garden Lights](Readme/GardenLights.png)
 #### Current integration (holy mess)
 The current integration is done in very difficult way. 
 All sensors are connected physically to MCP23017 which is a 16 bit parallel I/O expansion.
-MCP23017 is connected to Raspberry by I2C protocol. Program is looping these ports in every second to find IR detectors interruptions.</br>
+MCP23017 is connected to Raspberry by I2C protocol. Program is looping these ports in every second to find IR detectors interruptions.<br/>
 With the new serial port connection I can get rid of hundreds of wires to replace them just with two wires. 
-I took some pictures because very soon this mess is not exist anymore. </br>
+I took some pictures because very soon this mess is not exist anymore. <br/>
 
 ![M_C_P23017](Readme/MCP23017.png)
 ![M C P23017](Readme/MCP23017.jpg)
 ![M C P23017 1](Readme/MCP23017_1.jpg)
 ## Paradox serial output messages explained
 
-|Byte_1</br>Hex|Event|Byte_2</br>Hex|Sub-Group|Byte_3|Byte_4|
+|Byte_1<br/>Hex|Event|Byte_2<br/>Hex|Sub-Group|Byte_3|Byte_4|
 |---|---|-------------|---|---|---|
 |0x00|Zone OK||Zones table|   |   |
 |0x04|Zone Open||Zones table|   |   |
@@ -206,11 +206,11 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 |0x??|Bypass programming||Access Codes|
 |0x??|User Activated PGM||Access Codes|
 |0x??|Zone with delay transmission option enabled is breached||Zones table|
-|0x34</br>0x35</br>0x36</br>0x37|Arm|<span style="white-space: nowrap;">0x11 - 0xF1</span></br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
+|0x34<br/>0x35<br/>0x36<br/>0x37|Arm|<div style="white-space: nowrap;">0x11 - 0xF1</div><br/>0x01-0xF1<br/>0x01-0xF1<br/>0x01|Access Codes 001-015<br/>Access Codes 016-031<br/>Access Codes 032-047<br/>Access Code 048|
 |0x??|Special arm||Special arm table|
-|0x3C</br>0x3D</br>0x3E</br>0x3F|Disarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
-|0x40</br>0x41</br>0x42</br>0x43|Disarm after alarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
-|0x44</br>0x45</br>0x46</br>0x47|Cancel alarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
+|0x3C<br/>0x3D<br/>0x3E<br/>0x3F|Disarm|0x11-0xF1<br/>0x01-0xF1<br/>0x01-0xF1<br/>0x01|Access Codes 001-015<br/>Access Codes 016-031<br/>Access Codes 032-047<br/>Access Code 048|
+|0x40<br/>0x41<br/>0x42<br/>0x43|Disarm after alarm|0x11-0xF1<br/>0x01-0xF1<br/>0x01-0xF1<br/>0x01|Access Codes 001-015<br/>Access Codes 016-031<br/>Access Codes 032-047<br/>Access Code 048|
+|0x44<br/>0x45<br/>0x46<br/>0x47|Cancel alarm|0x11-0xF1<br/>0x01-0xF1<br/>0x01-0xF1<br/>0x01|Access Codes 001-015<br/>Access Codes 016-031<br/>Access Codes 032-047<br/>Access Code 048|
 |0x??|Special Disarm||Special Disarm table|
 |0x??|Zone Bypassed on arming||Zones table|
 |0x50|Zone in alarm||Zones table|
@@ -313,30 +313,30 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 
 ### Resources used during the project
 Serial Port Programming With .NET.
-Good resource for beginner to understand how to read serial messages.</br>
+Good resource for beginner to understand how to read serial messages.<br/>
 https://www.instructables.com/Serial-Port-Programming-With-NET/
 
 Serial Communication with .NET Core 3.0 on RPi Linux.
-Good build and publish scripts.</br>
-https://dev.to/azure/net-core-iot-raspberry-pi-linux-and-azure-iot-hub-learn-how-to-build-deploy-and-debug-d1f </br>
+Good build and publish scripts.<br/>
+https://dev.to/azure/net-core-iot-raspberry-pi-linux-and-azure-iot-hub-learn-how-to-build-deploy-and-debug-d1f <br/>
 https://www.hackster.io/sxwei123/serial-communication-with-net-core-3-0-on-rpi-linux-0f2ed4
 
-Overall serial communication explanation.</br>
+Overall serial communication explanation.<br/>
 https://learn.sparkfun.com/tutorials/serial-communication/all
 
-Picoscope oscilloscope for serial communication. </br>
+Picoscope oscilloscope for serial communication. <br/>
 https://www.picotech.com/download/datasheets/MM043_PicoScope_Serial_Decoding_Data_Sheet.pdf
 
-Paradox home security hacking for newest devices. Useless to me </br>
+Paradox home security hacking for newest devices. Useless to me <br/>
 https://harizanov.com/2014/07/interfacing-with-paradox-home-security-system-attempt-2/
 
-This project is useless to me as well as it is only for newest systems.</br>
+This project is useless to me as well as it is only for newest systems.<br/>
 https://github.com/ParadoxAlarmInterface
 
-Raspberry Tx->Rx (5v->3.3v)</br>
-https://www.raspberrypi.org/forums/viewtopic.php?t=94042 </br>
+Raspberry Tx->Rx (5v->3.3v)<br/>
+https://www.raspberrypi.org/forums/viewtopic.php?t=94042 <br/>
 
-Setup WSL (Windows Subsystem for Linux)</br>
-https://docs.microsoft.com/en-us/windows/wsl/install-win10?WT.mc_id=devto-blog-dglover </br>
-Raspberry headless setup</br>
-https://desertbot.io/blog/headless-raspberry-pi-3-bplus-ssh-wifi-setup </br>
+Setup WSL (Windows Subsystem for Linux)<br/>
+https://docs.microsoft.com/en-us/windows/wsl/install-win10?WT.mc_id=devto-blog-dglover <br/>
+Raspberry headless setup<br/>
+https://desertbot.io/blog/headless-raspberry-pi-3-bplus-ssh-wifi-setup <br/>
