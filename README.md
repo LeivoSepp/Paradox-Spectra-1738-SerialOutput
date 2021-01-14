@@ -253,6 +253,23 @@ I took some pictures before disconnecting this old mess. <br/>
 |0x61|PC Fail to Communicate| 
 |0x71|Midnight| 
 
+|Byte 2|Special arm|
+|---|---|
+|0x01|Auto arming (timed/no movement)|
+|0x11|Late to Close (Auto-Arming failed)|
+|0x21|No Movement Auto-Arming|
+|0x31|Partial Arming (Stay, Force, Instant, Bypass)|
+|0x41|One-Touch Arming|
+|0x51|Arm with WinLoad Software|
+|0x71|Closing Delinquency|
+
+|Byte 2|Special disarm|
+|---|---|
+|0x01|Cancel Auto Arm (timed/no movement)|
+|0x11|Disarm with WinLoad Software|
+|0x21|Disarm after alarm with WinLoad Software|
+|0x31|Cancel Alarm with WinLoad Software|
+
 
 |Byte 2| Statuses|
 |---|---|
