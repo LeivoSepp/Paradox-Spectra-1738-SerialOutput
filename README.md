@@ -193,9 +193,8 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 ![M C P23017 1](Readme/MCP23017_1.jpg)
 ## Paradox serial output messages explained
 
-|Byte 1|   |Byte 2|   |Byte 3|Byte 4|
+|Byte_1</br>Hex|Event|Byte_2</br>Hex|Sub-Group|Byte_3|Byte_4|
 |---|---|---|---|---|---|
-| Hex | Event | Hex | Message |   |   |
 |  0x00 | Zone closed  |   | Zones table  |   |   |
 |  0x04  | Zone Open  |   | Zones table  |   |   |
 |0x08|Status||Statuses table|
