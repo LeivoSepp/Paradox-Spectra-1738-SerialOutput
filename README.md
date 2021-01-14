@@ -203,8 +203,8 @@ I took some pictures because very soon this mess is not exist anymore. <br/>
 |0x??|Button Pressed on Remote (B)||Remote Controls 1-8|
 |0x??|Button Pressed on Remote (C)||Remote Controls 1-8|
 |0x??|Button Pressed on Remote (D)||Remote Controls 1-8|
-|0x??|Bypass programming||Access Codes|
-|0x??|User Activated PGM||Access Codes|
+|0x??<br/>0x??<br/>0x??<br/>0x??|Bypass programming|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
+|0x??<br/>0x??<br/>0x??<br/>0x??|User Activated PGM|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
 |0x??|Zone with delay transmission option enabled is breached||Zones table|
 |0x34<br/>0x35<br/>0x36<br/>0x37|Arm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
 |0x??|Special arm||Special arm table|
