@@ -197,8 +197,8 @@ I took some pictures before disconnecting this old mess. <br/>
 |---|---|---|---|
 |0x00|Zone OK||Zones table|
 |0x04|Zone Open||Zones table|
-|0x08|Partition Status||Statuses table|
-|0x14|Non-Reportable events||Non-Reportable events table|
+|0x08|Partition Status|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>0x61<br/>0x71<br/>0x81<br/>0x91<br/>0xA1<br/>0xB1|System not ready<br/>System ready<br/>Steady alarm<br/>Pulsed alarm<br/>Pulsed or Steady Alarm<br/>Alarm in partition restored<br/>Bell Squawk Activated<br/>Bell Squawk Deactivated<br/>Ground start<br/>Disarm partition<br/>Arm partition<br/>Entry delay started|
+|0x14|Non-Reportable events|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>0x61<br/>0x71|Telephone Line Trouble<br/>Reset smoke detectors<br/>Instant arming<br/>Stay arming<br/>Force arming<br/>Fast Exit (Force & Regular Only)<br/>PC Fail to Communicate<br/>Midnight|
 |0x??|Arm/Disarm with Remote Control||Remote Controls 1-8|
 |0x??|Button Pressed on Remote (B)||Remote Controls 1-8|
 |0x??|Button Pressed on Remote (C)||Remote Controls 1-8|
@@ -207,22 +207,21 @@ I took some pictures before disconnecting this old mess. <br/>
 |0x??<br/>0x??<br/>0x??<br/>0x??|User Activated PGM|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
 |0x??|Zone with delay<br/>transmission option enabled is breached||Zones table|
 |0x34<br/>0x35<br/>0x36<br/>0x37|Arm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
-|0x??|Special arm||Special arm table|
+|0x??|Special arm|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>0x71|Auto arming (timed/no movement)<br/>Late to Close (Auto-Arming failed)<br/>No Movement Auto-Arming<br/>Partial Arming (Stay, Force, Instant, Bypass)<br/>One-Touch Arming<br/>Arm with WinLoad Software<br/>Closing Delinquency|
 |0x3C<br/>0x3D<br/>0x3E<br/>0x3F|Disarm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
 |0x40<br/>0x41<br/>0x42<br/>0x43|Disarm after alarm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
 |0x44<br/>0x45<br/>0x46<br/>0x47|Cancel alarm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
-|0x??|Special Disarm||Special Disarm table|
+|0x??|Special Disarm|0x01<br/>0x11<br/>0x21<br/>0x31|Cancel Auto Arm (timed/no movement)<br/>Disarm with WinLoad Software<br/>Disarm after alarm with WinLoad Software<br/>Cancel Alarm with WinLoad Software|
 |0x??|Zone Bypassed on arming||Zones table|
 |0x50|Zone in alarm||Zones table|
 |0x54|Fire alarm||Zones table|
 |0x58|Zone alarm restore||Zones table|
 |0x5C|Fire alarm restore||Zones table|
-|0x60|Special alarm||Special Alarms table|
+|0x60|Special alarm|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>061|Emergency, keys [1] [3]<br/>Auxiliary, keys [4] [6]<br/>Fire, keys [7] [9]<br/>Recent closing<br/>Auto Zone Shutdown<br/>Duress alarm<br/>Keypad lockout|
 |0x??|Auto zone shutdown||Zones table|
 |0x??|Zone tamper||Zones table|
 |0x??|Zone tamper restore||Zones table|
-|0x70|System Trouble||Troubles table|
-|0x74|System Trouble restore||Troubles table|
+|0x70<br/>0x74|System Trouble<br/>System Trouble restore|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>0x61<br/>0x71<br/>0x81<br/>0x91<br/>0xA1<br/>0xB1|AC Loss<br/>Battery Failure<br/>Auxiliary current overload<br/>Bell current overload<br/>Bell disconnected<br/>Timer Loss<br/>Fire Loop Trouble<br/>Future use<br/>Module Fault<br/>Printer Fault<br/>Fail to Communicate|
 |0x78|Special reporting|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51|System power up<br/>Test report<br/>WinLoad Software Access<br/>WinLoad Software Access finished<br/>Installer enters programming mode<br/>Installer exits programming mode|
 |0x??|Wireless Transmitter Supervision Loss||Zones table|
 |0x??|Wireless Transmitter Supervision Loss Restore||Zones table|
@@ -232,65 +231,6 @@ I took some pictures before disconnecting this old mess. <br/>
 |0x??|Cancel Alarm with a Keyswitch||Zones table|
 |0x??|Wireless Transmitter Low Battery||Zones table|
 |0x??|Wireless Transmitter Low Battery Restore||Zones table|
-
-
-|Byte 2|Non-Reportable events|
-|---|---|
-|0x01|Telephone Line Trouble|
-|0x11|Reset smoke detectors|
-|0x21|Instant arming|
-|0x31|Stay arming|
-|0x41|Force arming|
-|0x51|Fast Exit (Force & Regular Only)|
-|0x61|PC Fail to Communicate| 
-|0x71|Midnight| 
-
-|Byte 2|Special arm|
-|---|---|
-|0x01|Auto arming (timed/no movement)|
-|0x11|Late to Close (Auto-Arming failed)|
-|0x21|No Movement Auto-Arming|
-|0x31|Partial Arming (Stay, Force, Instant, Bypass)|
-|0x41|One-Touch Arming|
-|0x51|Arm with WinLoad Software|
-|0x71|Closing Delinquency|
-
-|Byte 2|Special disarm|
-|---|---|
-|0x01|Cancel Auto Arm (timed/no movement)|
-|0x11|Disarm with WinLoad Software|
-|0x21|Disarm after alarm with WinLoad Software|
-|0x31|Cancel Alarm with WinLoad Software|
-
-
-|Byte 2| Statuses|
-|---|---|
-|0x01|System not ready|
-|0x11|System ready|
-|0x21|Steady alarm|
-|0x31|Pulsed alarm|
-|0x41|Pulsed or Steady Alarm|
-|0x51|Alarm in partition restored|
-|0x61|Bell Squawk Activated| 
-|0x71|Bell Squawk Deactivated| 
-|0x81|Ground start|
-|0x91|Disarm partition|
-|0xA1|Arm partition|
-|0xB1|Entry delay started|
- 
-|Byte 2|Troubles|
-|---|---|
-|0x11|AC Loss|
-|0x21|Battery Failure|
-|0x31|Auxiliary current overload| 
-|0x41|Bell current overload| 
-|0x51|Bell disconnected|
-|0x61|Timer Loss|
-|0x71|Fire Loop Trouble|
-|0x81|Future use|
-|0x91|Module Fault|
-|0xA1|Printer Fault|
-|0xB1|Fail to Communicate|
 
 
 |Byte 2|Zones|
@@ -310,15 +250,6 @@ I took some pictures before disconnecting this old mess. <br/>
 |0xD1|Zone 13|
 |0xE1|Zone 14|
 
-|Byte 2|Special alarms|
-|---|---|
-|0x01|Emergency, keys [1] [3]|
-|0x11|Auxiliary, keys [4] [6]|
-|0x21|Fire, keys [7] [9]|
-|0x31|Recent closing| 
-|0x41|Auto Zone Shutdown|
-|0x51|Duress alarm|
-|0x61|Keypad lockout| 
 
 ### Resources used during the project
 Serial Port Programming With .NET.
