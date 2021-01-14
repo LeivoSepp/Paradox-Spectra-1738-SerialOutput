@@ -195,9 +195,9 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 
 |Byte_1</br>Hex|Event|Byte_2</br>Hex|Sub-Group|Byte_3|Byte_4|
 |---|---|---|---|---|---|
-|  0x00 | Zone closed  |   | Zones table  |   |   |
-|  0x04  | Zone Open  |   | Zones table  |   |   |
-|0x08|Status||Statuses table|
+|0x00|Zone OK||Zones table|   |   |
+|0x04|Zone Open||Zones table|   |   |
+|0x08|Partition Status||Statuses table|
 |0x14|Non-Reportable events||Non-Reportable events table|
 |0x??|Arm/Disarm with Remote Control||Remote Controls 1-8|
 |0x??|Button Pressed on Remote (B)||Remote Controls 1-8|
@@ -206,7 +206,7 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 |0x??|Bypass programming||Access Codes|
 |0x??|User Activated PGM||Access Codes|
 |0x??|Zone with delay transmission option enabled is breached||Zones table|
-|0x34</br>0x35</br>0x36</br>0x37|Arm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
+|0x34</br>0x35</br>0x36</br>0x37|Arm|<nobr>0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
 |0x??|Special arm||Special arm table|
 |0x3C</br>0x3D</br>0x3E</br>0x3F|Disarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
 |0x40</br>0x41</br>0x42</br>0x43|Disarm after alarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
@@ -261,9 +261,9 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 |0x21|Steady alarm|
 |0x31|Pulsed alarm|
 |0x41|Pulsed or Steady Alarm|
-|0x51|Alarm occurred during arm|
-|0x61|Access code entered| 
-|0x71|Access code entered| 
+|0x51|Alarm in partition restored|
+|0x61|Bell Squawk Activated| 
+|0x71|Bell Squawk Deactivated| 
 |0x81|Ground start|
 |0x91|Disarm partition|
 |0xA1|Arm partition|
@@ -280,6 +280,8 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 |0x71|Fire Loop Trouble|
 |0x81|Future use|
 |0x91|Module Fault|
+|0xA1|Printer Fault|
+|0xB1|Fail to Communicate|
 
 
 |Byte 2|Zones|
