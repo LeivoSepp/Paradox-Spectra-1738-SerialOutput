@@ -5,7 +5,7 @@ Reverse engineering of Paradox Spectra 1738 Security System Serial Output. Readi
 Spectra 1738 serial output is 4 bytes. Look at the tables by the end of this doument.
 
 - **Byte 1** is an event.
-- **Byte 2** is a message like zone number, user, status, trouble info.
+- **Byte 2** is a sub-category like zone number, access code, status, trouble info.
 - **Byte 3, Byte 4** are used for clock.
 
 ## <div align=center>Connect Paradox serial output to Raspberry PI</div>
@@ -28,9 +28,9 @@ As I do not have this converter and the electric current is very small then simp
 This is my very first project to deal with a COM-port and serial messages. Therefore I start at the beginning and
 creating a foreach loop to see is there any COM-ports presented in my Raspberry. 
 #### Find Raspberry COM port
-This foreach loop list all available COM-ports presented by Raspberry.
-If there is no COM-port available then this have to be enabled from the Raspberry global settings raspi-config.
-Keep in mind that SerialPort is exist in System.IO.Ports whichcan be downloaded as NuGet package.
+This `foreach` loop list all available COM-ports presented by Raspberry.
+If there is no COM-port available then this have to be enabled from the Raspberry global settings `raspi-config`.
+Keep in mind that `SerialPort` is exist in `System.IO.Ports` which can be downloaded as a NuGet package.
 
 ```C#
 string[] ports = SerialPort.GetPortNames();
@@ -43,7 +43,7 @@ foreach (string port in ports)
 // /dev/ttyAMA0
 ```
 #### Create and open COM port
-The next task is to write some lines of code to create a COM port which we can use for reading serial messages.
+The next task is to write some lines of code to create a COM port which can be used to read serial messages.
 
 ```C#
 string ComPort = "/dev/ttyAMA0";
@@ -91,7 +91,7 @@ be categorized into 10 category like zones, troubles, statuses etc.
 Within deeper reverse engineering I figured out that each event (or event group like different Access Codes) 
 will start after 4 bytes. After realizing that pattern the rest of the work was relatively simple to map all events with correct codes.
 
-Each of the category has it's own boolean to identity correct subcategory.
+Each of the category has it's own boolean to identify correct subcategory.
 
 ```C#
 string Byte1id = DataStream[0].ToString("X2");
@@ -116,7 +116,7 @@ Byte 2 is a category like zone number, access code, status info, trouble info, s
 
 All the subcategories are explained below in the table. 
 The table has a complete set of subcategories what Paradox Spectra 1738 can report.
-This demo project will print all the events and subcategories. Each bcategory has its own list.
+This demo project will print all the events and subcategories. Each subcategory has its own list.
 ```C#
 if (isStatus) Message = PartitionStatuses.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Status_{Byte2id}").First();
 if (isTrouble) Message = SystemTroubles.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Trouble_{Byte2id}").First();
@@ -133,7 +133,7 @@ Console.WriteLine();
 
 There are two special subcategories Zones and Access Codes.
 
-Zones list has two additional attributes `ZoneEventTime` and boolean `IsZoneOpen` to determine if the zone is open or closed.
+**Zones** list has two additional attributes `ZoneEventTime` and boolean `IsZoneOpen` to determine if the zone is open or closed.
 These values will be written back to the list every time when the zone accessed.
 ```C#
 if (isZoneEvent)
@@ -148,12 +148,12 @@ if (isZoneEvent)
 
 ```
 
-Access Codes are second special list as they are numbered from 001-048 where first three are master codes
-and the last one is special Duress Code (to disarm building and send quiet alarm). These 48 codes are used in block
-of event and they takes 4 bytes. For example arming Access Codes are events 0x34 0x35 0x36 0x37. 
-Each of the event number will have it's own subcategory with defined amount of User Access codes. 
+**Access Codes** are second special list as they are numbered from 001-048 where first three are master codes
+and the last one is special Duress Code to disarm and send quiet alarm. These 48 codes are used in block
+of event which is 4 bytes. For example arming Access Codes are divided into events 0x34 0x35 0x36 0x37. 
+Each of the event number will have it's own subcategory with pre-defined amount of User Access codes. 
 
-Example: Arm event 0x34 have subcategory with numbers 0x11 0x21 0x31 ... 0xF1 and each of the subcategory number represents one Access Codes 001...015.
+Example: Arm event 0x34 have subcategory with numbers 0x11 0x21 0x31 ... 0xF1 and each of the subcategory number represents one Access Code 001...015.
 
 Example 2: Disarm event 0x3F has only one subcategory with a number 0x01 which represents Access Code 048 (Duress Code).
 
