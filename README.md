@@ -199,44 +199,92 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 |  0x00 | Zone closed  |   | Zones table  |   |   |
 |  0x04  | Zone Open  |   | Zones table  |   |   |
 |0x08|Status||Statuses table|
-|0x14|Unknown|0x71</br>0x11|Occurred exactly 00:00 </br>Smoke detector reset |
-|0x34</br>0x35</br>0x36</br>0x37|Arming|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
-|0x3C</br>0x3D</br>0x3E</br>0x3F|Disarming|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
-|0x40</br>0x41</br>0x42</br>0x43|Disarming after alarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
-|0x44</br>0x45</br>0x46</br>0x47|Disarming after installer mode|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
-|0x50|Zone alarm||Zones table|
+|0x14|Non-Reportable events||Non-Reportable events table|
+|0x??|Arm/Disarm with Remote Control||Remote Controls 1-8|
+|0x??|Button Pressed on Remote (B)||Remote Controls 1-8|
+|0x??|Button Pressed on Remote (C)||Remote Controls 1-8|
+|0x??|Button Pressed on Remote (D)||Remote Controls 1-8|
+|0x??|Bypass programming||Access Codes|
+|0x??|User Activated PGM||Access Codes|
+|0x??|Zone with delay transmission option enabled is breached||Zones table|
+|0x34</br>0x35</br>0x36</br>0x37|Arm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
+|0x??|Special arm||Special arm table|
+|0x3C</br>0x3D</br>0x3E</br>0x3F|Disarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
+|0x40</br>0x41</br>0x42</br>0x43|Disarm after alarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
+|0x44</br>0x45</br>0x46</br>0x47|Cancel alarm|0x11-0xF1</br>0x01-0xF1</br>0x01-0xF1</br>0x01|Access Codes 001-015</br>Access Codes 016-031</br>Access Codes 032-047</br>Access Code 048|
+|0x??|Special Disarm||Special Disarm table|
+|0x??|Zone Bypassed on arming||Zones table|
+|0x50|Zone in alarm||Zones table|
 |0x54|Fire alarm||Zones table|
 |0x58|Zone alarm restore||Zones table|
 |0x5C|Fire alarm restore||Zones table|
-|0x60|Panic alarms|0x01</br>0x11</br>0x21</br>0x51|Panic 1 keys [1] [3]</br>Panic 2 keys [4] [6]</br>Panic 3 keys [7] [9]</br>Panic from Duress Code|
-|0x70|Trouble fail||Troubles table|
-|0x74|Trouble restore||Troubles table|
-|0x78|Installer mode|0x41</br>0x51|Enter installer mode</br>Exit installer mode|
+|0x60|Special alarm||Special Alarms table|
+|0x??|Auto zone shutdown||Zones table|
+|0x??|Zone tamper||Zones table|
+|0x??|Zone tamper restore||Zones table|
+|0x70|System Trouble||Troubles table|
+|0x74|System Trouble restore||Troubles table|
+|0x78|Special reporting||Special reportings table|
+|0x??|Wireless Transmitter Supervision Loss||Zones table|
+|0x??|Wireless Transmitter Supervision Loss Restore||Zones table|
+|0x??|Arming with a Keyswitch||Zones table|
+|0x??|Disarming with a Keyswitch||Zones table|
+|0x??|Disarm after Alarm with a Keyswitch||Zones table|
+|0x??|Cancel Alarm with a Keyswitch||Zones table|
+|0x??|Wireless Transmitter Low Battery||Zones table|
+|0x??|Wireless Transmitter Low Battery Restore||Zones table|
+
+|Byte 2|Special reporting|
+|---|---|
+|0x01|System power up|
+|0x11|Test report|
+|0x21|WinLoad Software Access|
+|0x31|WinLoad Software Access finished|
+|0x41|Installer enters programming mode|
+|0x51|Installer exits programming mode|
+
+|Byte 2|Non-Reportable events|
+|---|---|
+|0x01|Telephone Line Trouble|
+|0x11|Reset smoke detectors|
+|0x21|Instant arming|
+|0x31|Stay arming|
+|0x41|Force arming|
+|0x51|Fast Exit (Force & Regular Only)|
+|0x61|PC Fail to Communicate| 
+|0x71|Midnight| 
+
 
 |Byte 2| Statuses|
 |---|---|
-|Hex|Event|
-|0x01|Zones open| 
-|0x11|Zones closed| 
-|0x21|Zone alarm| 
-|0x31|Fire alarm| 
-|0x41|Alarm|
+|0x01|System not ready|
+|0x11|System ready|
+|0x21|Steady alarm|
+|0x31|Pulsed alarm|
+|0x41|Pulsed or Steady Alarm|
 |0x51|Alarm occurred during arm|
 |0x61|Access code entered| 
 |0x71|Access code entered| 
-|0x91|Disarmed|
-|0xA1|Armed|
-|0xB1|Entry delaystarted|
+|0x81|Ground start|
+|0x91|Disarm partition|
+|0xA1|Arm partition|
+|0xB1|Entry delay started|
  
 |Byte 2|Troubles|
 |---|---|
-|Hex|Event|
-|0x21|Battery| 
-|0x51|Bell| 
+|0x11|AC Loss|
+|0x21|Battery Failure|
+|0x31|Auxiliary current overload| 
+|0x41|Bell current overload| 
+|0x51|Bell disconnected|
+|0x61|Timer Loss|
+|0x71|Fire Loop Trouble|
+|0x81|Future use|
+|0x91|Module Fault|
+
 
 |Byte 2|Zones|
 |---|---|
-|Hex|Event|
 |0x11|Zone 1| 
 |0x21|Zone 2| 
 |0x31|Zone 3| 
@@ -252,6 +300,15 @@ I took some pictures because very soon this mess is not exist anymore. </br>
 |0xD1|Zone 13|
 |0xE1|Zone 14|
 
+|Byte 2|Special alarms|
+|---|---|
+|0x01|Emergency, keys [1] [3]|
+|0x11|Auxiliary, keys [4] [6]|
+|0x21|Fire, keys [7] [9]|
+|0x31|Recent closing| 
+|0x41|Auto Zone Shutdown|
+|0x51|Duress alarm|
+|0x61|Keypad lockout| 
 
 ### Resources used during the project
 Serial Port Programming With .NET.
