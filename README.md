@@ -191,7 +191,7 @@ I took some pictures before disconnecting this old mess. <br/>
 ![M_C_P23017](Readme/MCP23017.png)
 ![M C P23017](Readme/MCP23017.jpg)
 ![M C P23017 1](Readme/MCP23017_1.jpg)
-## Paradox serial output messages explained
+## Paradox serial output messages (complete table, all codes!)
 
 |Byte_1<br/>Hex|Event|Byte_2<br/>Hex|Sub-Group|
 |---|---|---|---|
