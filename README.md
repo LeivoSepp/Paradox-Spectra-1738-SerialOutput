@@ -193,10 +193,10 @@ I took some pictures because very soon this mess is not exist anymore. <br/>
 ![M C P23017 1](Readme/MCP23017_1.jpg)
 ## Paradox serial output messages explained
 
-|Byte_1<br/>Hex|Event|Byte_2<br/>Hex|Sub-Group|Byte_3|Byte_4|
-|---|---|---|---|---|---|
-|0x00|Zone OK||Zones table|   |   |
-|0x04|Zone Open||Zones table|   |   |
+|Byte_1<br/>Hex|Event|Byte_2<br/>Hex|Sub-Group|
+|---|---|---|---|
+|0x00|Zone OK||Zones table|
+|0x04|Zone Open||Zones table|
 |0x08|Partition Status||Statuses table|
 |0x14|Non-Reportable events||Non-Reportable events table|
 |0x??|Arm/Disarm with Remote Control||Remote Controls 1-8|
