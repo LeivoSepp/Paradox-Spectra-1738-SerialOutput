@@ -223,7 +223,7 @@ I took some pictures before disconnecting this old mess. <br/>
 |0x??|Zone tamper restore||Zones table|
 |0x70|System Trouble||Troubles table|
 |0x74|System Trouble restore||Troubles table|
-|0x78|Special reporting||Special reportings table|
+|0x78|Special reporting|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51|System power up<br/>Test report<br/>WinLoad Software Access<br/>WinLoad Software Access finished<br/>Installer enters programming mode<br/>Installer exits programming mode|
 |0x??|Wireless Transmitter Supervision Loss||Zones table|
 |0x??|Wireless Transmitter Supervision Loss Restore||Zones table|
 |0x??|Arming with a Keyswitch||Zones table|
@@ -233,14 +233,6 @@ I took some pictures before disconnecting this old mess. <br/>
 |0x??|Wireless Transmitter Low Battery||Zones table|
 |0x??|Wireless Transmitter Low Battery Restore||Zones table|
 
-|Byte 2|Special reporting|
-|---|---|
-|0x01|System power up|
-|0x11|Test report|
-|0x21|WinLoad Software Access|
-|0x31|WinLoad Software Access finished|
-|0x41|Installer enters programming mode|
-|0x51|Installer exits programming mode|
 
 |Byte 2|Non-Reportable events|
 |---|---|
