@@ -228,7 +228,7 @@ After integration with Home Automation the clock is managed anyway by Rasperry P
 ## Paradox serial output messages with all codes
 
 |EventId|Description|CategoryId|Description|
-|---|---|---|---|
+|--:|:--|--:|---|
 |1|Zone OK|1-16|Zones 1-16|
 |2|Zone Open|1-16|Zones 1-16|
 |3|Partition Status|0<br/>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11|System not ready<br/>System ready<br/>Steady alarm<br/>Pulsed alarm<br/>Pulsed or Steady Alarm<br/>Alarm in partition restored<br/>Bell Squawk Activated<br/>Bell Squawk Deactivated<br/>Ground start<br/>Disarm partition<br/>Arm partition<br/>Entry delay started|
