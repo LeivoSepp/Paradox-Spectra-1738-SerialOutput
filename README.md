@@ -84,20 +84,33 @@ catch (Exception e) { Console.WriteLine($"Timeout {e}"); }
 }
 ```
 ---
-## <div align=center>Byte 1: Event</div>
+## <div align=center>Byte 1 and 2: Event and Category</div>
+Byte1 and Byte2 has to be considered like an one 16 bit number. All events and categories are based on these numbers.
+It is very important not to take byte1 as an event and byte2 as a category. 
 
-Byte 1 is an event. Each event have a subcategory which is a byte2. There are many events and they can 
-be categorized into 10 category like zones, troubles, statuses etc.
+* Bits 1-4 can be igored
+* Bits 5-10 are for Categories
+* Bits 11-16 are for Events
 
-Within deeper reverse engineering I figured out that each event (or event group like different Access Codes) 
-will start after 4 bytes. After realizing that pattern the rest of the work was relatively simple to map all events with correct codes.
+|Byte1|Byte2|
+|---|---|
+|0000 0000| 0000 0000 |
 
-Each of the category has it's own boolean to identify correct subcategory.
+<img src="Readme/binary_event_cat.png" alt="Clock" width="300"/>
 
 ```C#
-int Byte1id = DataStream[0];
-string Event = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventName).DefaultIfEmpty($"Event_{Byte1id:X2}").First();
-int EventCategory = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventCategory).DefaultIfEmpty(DataStream[0]).First();
+int EventId = DataStream[0] >> 2;
+int CategoryId = ((DataStream[0] & 3) << 4) + (DataStream[1] >> 4);
+```
+
+---
+## <div align=center>Event</div>
+
+Events can be categorized into 10 main subcategory like zones, troubles, statuses, Access Codes etc.
+
+
+```C#
+int EventCategory = events.Where(x => x.EventId == EventId).Select(x => x.EventCategory).DefaultIfEmpty(EventId).First();
 
 bool isZoneEvent = EventCategory == Category.ZONE;
 bool isStatus = EventCategory == Category.STATUS;
@@ -111,21 +124,21 @@ bool isSpecialReport = EventCategory == Category.SPECIAL_REPORT;
 bool isRemoteControl = EventCategory == Category.REMOTE_CONTROL;
 ```
 ---
-## <div align=center>Byte 2: Sub-Category</div> 
+## <div align=center>Category</div> 
 
-Byte 2 is a category like zone number, access code, status info, trouble info, some sort of reporting etc.
+Categories are like zone numbers, access codes, status info, trouble info, some sort of reportings etc.
 
-All the subcategories are explained below in the table. 
-The table has a complete set of subcategories what Paradox Spectra 1738 can report.
-This demo project will print all the events and subcategories. Each subcategory has its own list.
+All the categories are explained below in the table. 
+The table has a complete set of categories what Paradox Spectra 1738 can report.
+This demo project will print all the events and categories. 
 ```C#
-if (isStatus) Message = PartitionStatuses.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Status_{Byte2id:X2}").First();
-if (isTrouble) Message = SystemTroubles.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Trouble_{Byte2id:X2}").First();
-if (isSpecialAlarm) Message = SpecialAlarms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialAlarm_{Byte2id:X2}").First();
-if (isSpecialArm) Message = SpecialArms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialArm_{Byte2id:X2}").First();
-if (isSpecialDisarm) Message = SpecialDisarms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialDisarm_{Byte2id:X2}").First();
-if (isNonReportEvents) Message = NonReportableEvents.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"NonReportEvent_{Byte2id:X2}").First();
-if (isSpecialReport) Message = SpecialReportings.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialReporting_{Byte2id:X2}").First();
+if (isStatus) Message = PartitionStatuses.Where(x => x.CategoryId == CategoryId).Select(x => x.Name).DefaultIfEmpty($"Status_{CategoryId}").First();
+if (isTrouble) Message = SystemTroubles.Where(x => x.CategoryId == CategoryId).Select(x => x.Name).DefaultIfEmpty($"Trouble_{CategoryId}").First();
+if (isSpecialAlarm) Message = SpecialAlarms.Where(x => x.CategoryId == CategoryId).Select(x => x.Name).DefaultIfEmpty($"SpecialAlarm_{CategoryId}").First();
+if (isSpecialArm) Message = SpecialArms.Where(x => x.CategoryId == CategoryId).Select(x => x.Name).DefaultIfEmpty($"SpecialArm_{CategoryId}").First();
+if (isSpecialDisarm) Message = SpecialDisarms.Where(x => x.CategoryId == CategoryId).Select(x => x.Name).DefaultIfEmpty($"SpecialDisarm_{CategoryId}").First();
+if (isNonReportEvents) Message = NonReportableEvents.Where(x => x.CategoryId == CategoryId).Select(x => x.Name).DefaultIfEmpty($"NonReportEvent_{CategoryId}").First();
+if (isSpecialReport) Message = SpecialReportings.Where(x => x.CategoryId == CategoryId).Select(x => x.Name).DefaultIfEmpty($"SpecialReporting_{CategoryId}").First();
 
 Console.Write($"{Event}, {Message}");
 Console.WriteLine();
@@ -134,36 +147,28 @@ Console.WriteLine();
 
 There are two special subcategories Zones and Access Codes.
 
-**Zones** list has two additional attributes `ZoneEventTime` and boolean `IsZoneOpen` to determine if the zone is open or closed.
-These values will be written back to the list every time when the zone accessed.
+**Zones** list has two additional attributes `ZoneEventTime` and boolean `IsZoneOpen` 
+to determine later or from other code if the zone is open or closed.
+These values will be written back to the list every time the zone is accessed.
 ```C#
 if (isZoneEvent)
 {
     bool IsZoneOpen = false;
-    if (Byte1id == 0x04) IsZoneOpen = true;
+    if (EventId == 1) IsZoneOpen = true;
     //update existing list with the IR statuses and activating/closing time
-    Zones.Where(x => x.Byte2 == Byte2id).Select(x => { x.IsZoneOpen = IsZoneOpen; x.ZoneEventTime = DateTimeOffset.Now; return x; }).ToList();
-    Message = Zones.Where(x => x.Byte2 == Byte2id).Select(x => $"{x.ZoneName} {(x.IsZoneOpen ? "Open" : "Closed")}").DefaultIfEmpty($"Zone_{Byte2id}").First();
+    Zones.Where(x => x.CategoryId == CategoryId).Select(x => { x.IsZoneOpen = IsZoneOpen; x.ZoneEventTime = DateTimeOffset.Now; return x; }).ToList();
+    Message = Zones.Where(x => x.CategoryId == CategoryId).Select(x => $"{x.ZoneName}").DefaultIfEmpty($"Zone_{CategoryId}").First();
 }
 
 ```
 
-**Access Codes** are second special list as they are numbered from 001-048 where first three are master codes
-and the last one is special Duress Code to disarm and send quiet alarm. These 48 codes are used in block
-of event which is 4 bytes. For example arming Access Codes are divided into events 0x34 0x35 0x36 0x37. 
-Each of the event number will have it's own subcategory with pre-defined amount of User Access codes. 
+**Access Codes** is a second special list as they are numbered from 001-048. First three are master codes
+and the last one is a special Duress Code to send quiet alarm. 
 
-Example: Arm event 0x34 have subcategory with numbers 0x11 0x21 0x31 ... 0xF1 and each of the subcategory number represents one Access Code 001...015.
-
-Example 2: Disarm event 0x3F has only one subcategory with a number 0x01 which represents Access Code 048 (Duress Code).
-
-The method `GetAccessCode(Byte1id, Byte2id)` is calculating correct User Access code.
+The method `GetAccessCode(int code)` is calculating correct User Access code.
 ```C#
-public static string GetAccessCode(int Byte1, int Byte2)
+public static string GetAccessCode(int code)
 {
-    int twoBytes = (Byte1 << 8) + Byte2;
-    int code = (twoBytes & 0x3F0) >> 4;
-
     string AccessCode = code < 10 ? $"User Code 00{code}" : $"User Code 0{code}";
     if (code == 1) AccessCode = "Master code";
     if (code == 2) AccessCode = "Master Code 1";
@@ -182,12 +187,6 @@ Following is the output of this program.
 ## <div align=center>Bytes 3 and 4: Clock</div>
 
 One of the challenging reverse engineering task was to figure out how the clock is working. 
-
-#### Two bytes for a clock
-
-These two bytes has to be a clock but I didn't know how?
-
-Byte1 : Byte2 = 0000 0000 : 0000 0000
 
 #### Algorithm
 
@@ -229,63 +228,64 @@ After integration with Home Automation the clock is managed anyway by Rasperry P
 
 ## Paradox serial output messages with all codes
 
-|Byte_1<br/>Hex|Event|Byte_2<br/>Hex|Sub-Group|
+|EventId|Description|CategoryId|Description|
 |---|---|---|---|
-|0x00|Zone OK||Zones table|
-|0x04|Zone Open||Zones table|
-|0x08|Partition Status|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>0x61<br/>0x71<br/>0x81<br/>0x91<br/>0xA1<br/>0xB1|System not ready<br/>System ready<br/>Steady alarm<br/>Pulsed alarm<br/>Pulsed or Steady Alarm<br/>Alarm in partition restored<br/>Bell Squawk Activated<br/>Bell Squawk Deactivated<br/>Ground start<br/>Disarm partition<br/>Arm partition<br/>Entry delay started|
-|0x14|Non-Reportable events|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>0x61<br/>0x71|Telephone Line Trouble<br/>Reset smoke detectors<br/>Instant arming<br/>Stay arming<br/>Force arming<br/>Fast Exit (Force & Regular Only)<br/>PC Fail to Communicate<br/>Midnight|
-|0x18|Arm/Disarm with Remote Control||Remote Controls 1-8|
-|0x1C|Button Pressed on Remote (B)||Remote Controls 1-8|
-|0x20|Button Pressed on Remote (C)||Remote Controls 1-8|
-|0x24|Button Pressed on Remote (D)||Remote Controls 1-8|
-|0x28<br/>0x29<br/>0x2A<br/>0x2B|Bypass programming|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
-|0x2C<br/>0x2D<br/>0x2E<br/>0x2F|User Activated PGM|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
-|0x30|Zone with delay transmission<br/>option enabled is breached||Zones table|
-|0x34<br/>0x35<br/>0x36<br/>0x37|Arm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
-|0x38|Special arm|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>0x71|Auto arming (timed/no movement)<br/>Late to Close (Auto-Arming failed)<br/>No Movement Auto-Arming<br/>Partial Arming (Stay, Force, Instant, Bypass)<br/>One-Touch Arming<br/>Arm with WinLoad Software<br/>Closing Delinquency|
-|0x3C<br/>0x3D<br/>0x3E<br/>0x3F|Disarm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
-|0x40<br/>0x41<br/>0x42<br/>0x43|Disarm after alarm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
-|0x44<br/>0x45<br/>0x46<br/>0x47|Cancel alarm|0x11_0xF1<br/>0x01_0xF1<br/>0x01_0xF1<br/>0x01|Access Codes 001_015<br/>Access Codes 016_031<br/>Access Codes 032_047<br/>Access Code 048|
-|0x48|Special Disarm|0x01<br/>0x11<br/>0x21<br/>0x31|Cancel Auto Arm (timed/no movement)<br/>Disarm with WinLoad Software<br/>Disarm after alarm with WinLoad Software<br/>Cancel Alarm with WinLoad Software|
-|0x4C|Zone Bypassed on arming||Zones table|
-|0x50|Zone in alarm||Zones table|
-|0x54|Fire alarm||Zones table|
-|0x58|Zone alarm restore||Zones table|
-|0x5C|Fire alarm restore||Zones table|
-|0x60|Special alarm|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>0x61|Emergency, keys [1] [3]<br/>Auxiliary, keys [4] [6]<br/>Fire, keys [7] [9]<br/>Recent closing<br/>Auto Zone Shutdown<br/>Duress alarm<br/>Keypad lockout|
-|0x64|Auto zone shutdown||Zones table|
-|0x68|Zone tamper||Zones table|
-|0x6C|Zone tamper restore||Zones table|
-|0x70<br/>0x74|System Trouble<br/>System Trouble restore|0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51<br/>0x61<br/>0x71<br/>0x81<br/>0x91<br/>0xA1<br/>0xB1|AC Loss<br/>Battery Failure<br/>Auxiliary current overload<br/>Bell current overload<br/>Bell disconnected<br/>Timer Loss<br/>Fire Loop Trouble<br/>Future use<br/>Module Fault<br/>Printer Fault<br/>Fail to Communicate|
-|0x78|Special reporting|0x01<br/>0x11<br/>0x21<br/>0x31<br/>0x41<br/>0x51|System power up<br/>Test report<br/>WinLoad Software Access<br/>WinLoad Software Access finished<br/>Installer enters programming mode<br/>Installer exits programming mode|
-|0x7C|Wireless Transmitter<br/>Supervision Loss||Zones table|
-|0x80|Wireless Transmitter<br/>Supervision Loss Restore||Zones table|
-|0x84|Arming with a Keyswitch||Zones table|
-|0x88|Disarming with a Keyswitch||Zones table|
-|0x8C|Disarm after Alarm with a Keyswitch||Zones table|
-|0x90|Cancel Alarm with a Keyswitch||Zones table|
-|0x94|Wireless Transmitter<br/>Low Battery||Zones table|
-|0x98|Wireless Transmitter<br/>Low Battery Restore||Zones table|
+|1|Zone OK||Zones table|
+|2|Zone Open||Zones table|
+|3|Partition Status|0<br/>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11|System not ready<br/>System ready<br/>Steady alarm<br/>Pulsed alarm<br/>Pulsed or Steady Alarm<br/>Alarm in partition restored<br/>Bell Squawk Activated<br/>Bell Squawk Deactivated<br/>Ground start<br/>Disarm partition<br/>Arm partition<br/>Entry delay started|
+|5|Non-Reportable events|0<br/>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7|Telephone Line Trouble<br/>Reset smoke detectors<br/>Instant arming<br/>Stay arming<br/>Force arming<br/>Fast Exit (Force & Regular Only)<br/>PC Fail to Communicate<br/>Midnight|
+|6|Arm/Disarm with Remote Control||Remote Controls 1-8|
+|7|Button Pressed on Remote (B)||Remote Controls 1-8|
+|8|Button Pressed on Remote (C)||Remote Controls 1-8|
+|9|Button Pressed on Remote (D)||Remote Controls 1-8|
+|10|Bypass programming|1-48|Access Codes 001-048|
+|11|User Activated PGM|1-48|Access Codes 001-048|
+|12|Zone with delay transmission<br/>option enabled is breached||Zones table|
+|13|Arm|1-48|Access Codes 001-048|
+|14|Special arm|0<br/>1<br/>2<br/>3<br/>4<br/>5<br/>7|Auto arming (timed/no movement)<br/>Late to Close (Auto-Arming failed)<br/>No Movement Auto-Arming<br/>Partial Arming (Stay, Force, Instant, Bypass)<br/>One-Touch Arming<br/>Arm with WinLoad Software<br/>Closing Delinquency|
+|15|Disarm|1-48|Access Codes 001-048|
+|16|Disarm after alarm|1-48|Access Codes 001-048|
+|17|Cancel alarm|1-48|Access Codes 001-048|
+|18|Special Disarm|0<br/>1<br/>2<br/>3|Cancel Auto Arm (timed/no movement)<br/>Disarm with WinLoad Software<br/>Disarm after alarm with WinLoad Software<br/>Cancel Alarm with WinLoad Software|
+|19|Zone Bypassed on arming||Zones table|
+|20|Zone in alarm||Zones table|
+|21|Fire alarm||Zones table|
+|22|Zone alarm restore||Zones table|
+|23|Fire alarm restore||Zones table|
+|24|Special alarm|0<br/>1<br/>2<br/>3<br/>4<br/>5<br/>6|Emergency, keys [1] [3]<br/>Auxiliary, keys [4] [6]<br/>Fire, keys [7] [9]<br/>Recent closing<br/>Auto Zone Shutdown<br/>Duress alarm<br/>Keypad lockout|
+|25|Auto zone shutdown||Zones table|
+|26|Zone tamper||Zones table|
+|27|Zone tamper restore||Zones table|
+|28<br/>29|System Trouble<br/>System Trouble restore|1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11|AC Loss<br/>Battery Failure<br/>Auxiliary current overload<br/>Bell current overload<br/>Bell disconnected<br/>Timer Loss<br/>Fire Loop Trouble<br/>Future use<br/>Module Fault<br/>Printer Fault<br/>Fail to Communicate|
+|30|Special reporting|0<br/>1<br/>2<br/>3<br/>4<br/>5|System power up<br/>Test report<br/>WinLoad Software Access<br/>WinLoad Software Access finished<br/>Installer enters programming mode<br/>Installer exits programming mode|
+|31|Wireless Transmitter<br/>Supervision Loss||Zones table|
+|32|Wireless Transmitter<br/>Supervision Loss Restore||Zones table|
+|33|Arming with a Keyswitch||Zones table|
+|34|Disarming with a Keyswitch||Zones table|
+|35|Disarm after Alarm with a Keyswitch||Zones table|
+|36|Cancel Alarm with a Keyswitch||Zones table|
+|37|Wireless Transmitter<br/>Low Battery||Zones table|
+|38|Wireless Transmitter<br/>Low Battery Restore||Zones table|
 
 
-|Byte 2|Zones|
+|ZoneId|Zone|
 |---|---|
-|0x11|Zone 1| 
-|0x21|Zone 2| 
-|0x31|Zone 3| 
-|0x41|Zone 4|
-|0x51|Zone 5|
-|0x61|Zone 6| 
-|0x71|Zone 7| 
-|0x81|Zone 8|
-|0x91|Zone 9|
-|0xA1|Zone 10|
-|0xB1|Zone 11|
-|0xC1|Zone 12|
-|0xD1|Zone 13|
-|0xE1|Zone 14|
-
+|1|Zone 1| 
+|2|Zone 2| 
+|3|Zone 3| 
+|4|Zone 4|
+|5|Zone 5|
+|6|Zone 6| 
+|7|Zone 7| 
+|8|Zone 8|
+|9|Zone 9|
+|10|Zone 10|
+|11|Zone 11|
+|12|Zone 12|
+|13|Zone 13|
+|14|Zone 14|
+|15|Zone 15|
+|16|Zone 16|
 
 
 ## Reverse engineering with oscilloscope
