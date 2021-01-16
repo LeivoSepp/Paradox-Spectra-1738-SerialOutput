@@ -229,17 +229,17 @@ After integration with Home Automation the clock is managed anyway by Rasperry P
 
 |EventId|Description|CategoryId|Description|
 |---|---|---|---|
-|1|Zone OK||Zones table|
-|2|Zone Open||Zones table|
+|1|Zone OK|1-16|Zones 1-16|
+|2|Zone Open|1-16|Zones 1-16|
 |3|Partition Status|0<br/>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11|System not ready<br/>System ready<br/>Steady alarm<br/>Pulsed alarm<br/>Pulsed or Steady Alarm<br/>Alarm in partition restored<br/>Bell Squawk Activated<br/>Bell Squawk Deactivated<br/>Ground start<br/>Disarm partition<br/>Arm partition<br/>Entry delay started|
 |5|Non-Reportable events|0<br/>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7|Telephone Line Trouble<br/>Reset smoke detectors<br/>Instant arming<br/>Stay arming<br/>Force arming<br/>Fast Exit (Force & Regular Only)<br/>PC Fail to Communicate<br/>Midnight|
-|6|Arm/Disarm with Remote Control||Remote Controls 1-8|
-|7|Button Pressed on Remote (B)||Remote Controls 1-8|
-|8|Button Pressed on Remote (C)||Remote Controls 1-8|
-|9|Button Pressed on Remote (D)||Remote Controls 1-8|
+|6|Arm/Disarm with Remote Control|1-8|Remote Controls 1-8|
+|7|Button Pressed on Remote (B)|1-8|Remote Controls 1-8|
+|8|Button Pressed on Remote (C)|1-8|Remote Controls 1-8|
+|9|Button Pressed on Remote (D)|1-8|Remote Controls 1-8|
 |10|Bypass programming|1-48|Access Codes 001-048|
 |11|User Activated PGM|1-48|Access Codes 001-048|
-|12|Zone with delay transmission<br/>option enabled is breached||Zones table|
+|12|Zone with delay transmission<br/>option enabled is breached|1-16|Zones 1-16|
 |13|Arm|1-48|Access Codes 001-048|
 |14|Special arm|0<br/>1<br/>2<br/>3<br/>4<br/>5<br/>7|Auto arming (timed/no movement)<br/>Late to Close (Auto-Arming failed)<br/>No Movement Auto-Arming<br/>Partial Arming (Stay, Force, Instant, Bypass)<br/>One-Touch Arming<br/>Arm with WinLoad Software<br/>Closing Delinquency|
 |15|Disarm|1-48|Access Codes 001-048|
@@ -247,44 +247,24 @@ After integration with Home Automation the clock is managed anyway by Rasperry P
 |17|Cancel alarm|1-48|Access Codes 001-048|
 |18|Special Disarm|0<br/>1<br/>2<br/>3|Cancel Auto Arm (timed/no movement)<br/>Disarm with WinLoad Software<br/>Disarm after alarm with WinLoad Software<br/>Cancel Alarm with WinLoad Software|
 |19|Zone Bypassed on arming||Zones table|
-|20|Zone in alarm||Zones table|
-|21|Fire alarm||Zones table|
-|22|Zone alarm restore||Zones table|
-|23|Fire alarm restore||Zones table|
+|20|Zone in alarm|1-16|Zones 1-16|
+|21|Fire alarm|1-16|Zones 1-16|
+|22|Zone alarm restore|1-16|Zones 1-16|
+|23|Fire alarm restore|1-16|Zones 1-16|
 |24|Special alarm|0<br/>1<br/>2<br/>3<br/>4<br/>5<br/>6|Emergency, keys [1] [3]<br/>Auxiliary, keys [4] [6]<br/>Fire, keys [7] [9]<br/>Recent closing<br/>Auto Zone Shutdown<br/>Duress alarm<br/>Keypad lockout|
-|25|Auto zone shutdown||Zones table|
-|26|Zone tamper||Zones table|
-|27|Zone tamper restore||Zones table|
+|25|Auto zone shutdown|1-16|Zones 1-16|
+|26|Zone tamper|1-16|Zones 1-16|
+|27|Zone tamper restore|1-16|Zones 1-16|
 |28<br/>29|System Trouble<br/>System Trouble restore|1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11|AC Loss<br/>Battery Failure<br/>Auxiliary current overload<br/>Bell current overload<br/>Bell disconnected<br/>Timer Loss<br/>Fire Loop Trouble<br/>Future use<br/>Module Fault<br/>Printer Fault<br/>Fail to Communicate|
 |30|Special reporting|0<br/>1<br/>2<br/>3<br/>4<br/>5|System power up<br/>Test report<br/>WinLoad Software Access<br/>WinLoad Software Access finished<br/>Installer enters programming mode<br/>Installer exits programming mode|
-|31|Wireless Transmitter<br/>Supervision Loss||Zones table|
-|32|Wireless Transmitter<br/>Supervision Loss Restore||Zones table|
-|33|Arming with a Keyswitch||Zones table|
-|34|Disarming with a Keyswitch||Zones table|
-|35|Disarm after Alarm with a Keyswitch||Zones table|
-|36|Cancel Alarm with a Keyswitch||Zones table|
-|37|Wireless Transmitter<br/>Low Battery||Zones table|
-|38|Wireless Transmitter<br/>Low Battery Restore||Zones table|
-
-
-|ZoneId|Zone|
-|---|---|
-|1|Zone 1| 
-|2|Zone 2| 
-|3|Zone 3| 
-|4|Zone 4|
-|5|Zone 5|
-|6|Zone 6| 
-|7|Zone 7| 
-|8|Zone 8|
-|9|Zone 9|
-|10|Zone 10|
-|11|Zone 11|
-|12|Zone 12|
-|13|Zone 13|
-|14|Zone 14|
-|15|Zone 15|
-|16|Zone 16|
+|31|Wireless Transmitter<br/>Supervision Loss|1-16|Zones 1-16|
+|32|Wireless Transmitter<br/>Supervision Loss Restore|1-16|Zones 1-16|
+|33|Arming with a Keyswitch|1-16|Zones 1-16|
+|34|Disarming with a Keyswitch|1-16|Zones 1-16|
+|35|Disarm after Alarm with a Keyswitch|1-16|Zones 1-16|
+|36|Cancel Alarm with a Keyswitch|1-16|Zones 1-16|
+|37|Wireless Transmitter<br/>Low Battery|1-16|Zones 1-16|
+|38|Wireless Transmitter<br/>Low Battery Restore|1-16|Zones 1-16|
 
 
 ## Reverse engineering with oscilloscope
