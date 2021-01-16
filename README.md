@@ -227,7 +227,7 @@ After integration with Home Automation the clock is managed anyway by Rasperry P
 
 ## Paradox serial output messages with all codes
 
-|EventId|Description|CategoryId|Description|
+|Event ID|Description|Category ID|Description|
 |--:|:--|--:|---|
 |1|Zone OK|1-16|Zones 1-16|
 |2|Zone Open|1-16|Zones 1-16|
