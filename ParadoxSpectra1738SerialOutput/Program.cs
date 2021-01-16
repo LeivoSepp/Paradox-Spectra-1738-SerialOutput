@@ -59,13 +59,12 @@ namespace ParadoxSpectra1738SerialOutput
                 int msb = DataStream[2];
                 int lsb = DataStream[3];
 
-                //thats a clock, nice reverse engineering from octal logic
-                int hour = msb / 8;
-                int minute = msb % 8 * 16 + lsb / 16;
+                //getting minute and hour with shift operations
+                int hour = msb >> 3;
+                int minute = ((msb & 3) << 4) + (lsb >> 4);
+                string paradoxTime = $"{(hour < 10 ? $"0{hour}" : $"{hour}")}:{(minute < 10 ? $"0{minute}" : $"{minute}")}";
 
-                TimeSpan time = new TimeSpan(hour, minute, 0);
-                DateTime dateTime = DateTime.Now.Date.Add(time);
-                Console.Write($"{dateTime:t} ");
+                Console.Write($"{paradoxTime} ");
 
                 for (int i = 0; i < DataStream.Length; i++)
                 {

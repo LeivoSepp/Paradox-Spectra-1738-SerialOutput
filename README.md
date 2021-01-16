@@ -1,5 +1,6 @@
 # Paradox Spectra 1738 Serial Output Reverse Engineering
 Reverse engineering of Paradox Spectra 1738 Security System Serial Output. Reading the serial stream with Raspberry PI.
+![Paradox](Readme/Paradox.png)
 
 ## <div align=center>Paradox Spectra 1738 serial output</div>
 Spectra 1738 serial output is 4 bytes. Look at the tables by the end of this doument.
@@ -208,22 +209,32 @@ Following is the output of this program.
 ![Serial Output1](Readme/SerialOutput1.png)
 
 ---
-## <div align=center>Bytes 3 and 4: Octal Clock</div>
+## <div align=center>Bytes 3 and 4: Clock</div>
 
 One of the challenging reverse engineering task was to figure out how the clock is working. 
-It was an interesting mathemathical challenge.
 
-The actual outcome of this task is completely useless as it reads just the time reported by Paradox panel (24h format). 
-After integration with Home Automation the clock is managed anyway by Rasperry PI and will taken and sychronized from the internet. 
+#### Two bytes for a clock
 
-I started to solve it as this kind of unknown things are very interesting. I know that these two bytes has to be a clock but I dont know how. 
-To solve this mathemathical clock challenge the first task was to build the clock generator.
+These two bytes has to be a clock but I didn't know how?
 
-During the calculator building I realized that the solution is based on octal numeric system. 
-Huhh, crazy thing. Do you know what is Octal numeric system? The numbers are going up only to 7 and after that comes 10. 
->Octal 0,1,2,3,4,5,6,7,10,11,12,13,14,15,16,17 ...
+Byte1 : Byte2 = 0000 0000 : 0000 0000
 
-This is my project of the Octal Clock with the generator.<br/>
+#### Algorithm
+
+* Bits 1-4 are always zeros.
+* Bits 5-10 are minute.
+* Bit 11 is zero.
+* Bits 12-16 are hour.
+
+|0000 |0000 | 0000 | 0000 |
+|-|-|-|-|
+|HHHH |H0mm | mmmm | 0000 |
+
+Graphical view of this.
+
+<img src="Readme/binary_solution1.png" alt="Clock" width="200"/>
+
+This is my project of the Clock with the generator.<br/>
 https://github.com/LeivoSepp/Octal-Clock-Two-Bytes-24h 
 
 Some time examples:
@@ -231,16 +242,20 @@ Some time examples:
 * time 8:00 is in Octal 100 and in Hex 0x08.
 * time 20:00 is in Otal 240 and in Hex 0xA0.
 
-The final solution is a geniusly simple as it has just two lines of code (hours and minutes) with a little mathematics.
-
+The final solution is a geniusly simple as it has just two lines of code 
+for hours and minutes with binary shift operations.
 ```C#
 int msb = DataStream[2];
 int lsb = DataStream[3];
 
-//thats a clock, nice octal numeric system reverse engineering 
-int hour = msb / 8;
-int minute = msb % 8 * 16 + lsb / 16;
+//getting minute and hour with shift operations
+int hour = msb >> 3;
+int minute = ((msb & 3) << 4) + (lsb >> 4);
+string paradoxTime = $"{(hour < 10 ? $"0{hour}" : $"{hour}")}:{(minute < 10 ? $"0{minute}" : $"{minute}")}";
 ```
+
+The actual outcome of this task is completely useless as it reads just the time reported by Paradox panel (24h format). 
+After integration with Home Automation the clock is managed anyway by Rasperry PI and will taken and sychronized from the internet. 
 
 ## Paradox serial output messages with all codes
 
