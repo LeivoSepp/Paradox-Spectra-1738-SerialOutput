@@ -5,9 +5,8 @@ Reverse engineering of Paradox Spectra 1738 Security System Serial Output. Readi
 ## <div align=center>Paradox Spectra 1738 serial output</div>
 Spectra 1738 serial output is 4 bytes. Look at the tables by the end of this doument.
 
-- **Byte 1** is an event.
-- **Byte 2** is a sub-category like zone number, access code, status, trouble info.
-- **Byte 3, Byte 4** are used for clock.
+- **Bytes 1 and 2** are event and category.
+- **Bytes 3 and 4** are clock.
 
 ## <div align=center>Connect Paradox serial output to Raspberry PI</div>
 To read Paradox security messages by Raspberry PI we have to connect these two hardware devices.<br/> 
