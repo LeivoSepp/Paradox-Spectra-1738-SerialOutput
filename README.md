@@ -95,8 +95,8 @@ will start after 4 bytes. After realizing that pattern the rest of the work was 
 Each of the category has it's own boolean to identify correct subcategory.
 
 ```C#
-string Byte1id = DataStream[0].ToString("X2");
-string Event = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventName).DefaultIfEmpty($"Event_{Byte1id}").First();
+int Byte1id = DataStream[0];
+string Event = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventName).DefaultIfEmpty($"Event_{Byte1id:X2}").First();
 int EventCategory = events.Where(x => x.Byte1 == Byte1id).Select(x => x.EventCategory).DefaultIfEmpty(DataStream[0]).First();
 
 bool isZoneEvent = EventCategory == Category.ZONE;
@@ -119,13 +119,13 @@ All the subcategories are explained below in the table.
 The table has a complete set of subcategories what Paradox Spectra 1738 can report.
 This demo project will print all the events and subcategories. Each subcategory has its own list.
 ```C#
-if (isStatus) Message = PartitionStatuses.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Status_{Byte2id}").First();
-if (isTrouble) Message = SystemTroubles.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Trouble_{Byte2id}").First();
-if (isSpecialAlarm) Message = SpecialAlarms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialAlarm_{Byte2id}").First();
-if (isSpecialArm) Message = SpecialArms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialArm_{Byte2id}").First();
-if (isSpecialDisarm) Message = SpecialDisarms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialDisarm_{Byte2id}").First();
-if (isNonReportEvents) Message = NonReportableEvents.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"NonReportEvent_{Byte2id}").First();
-if (isSpecialReport) Message = SpecialReportings.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialReporting_{Byte2id}").First();
+if (isStatus) Message = PartitionStatuses.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Status_{Byte2id:X2}").First();
+if (isTrouble) Message = SystemTroubles.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"Trouble_{Byte2id:X2}").First();
+if (isSpecialAlarm) Message = SpecialAlarms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialAlarm_{Byte2id:X2}").First();
+if (isSpecialArm) Message = SpecialArms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialArm_{Byte2id:X2}").First();
+if (isSpecialDisarm) Message = SpecialDisarms.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialDisarm_{Byte2id:X2}").First();
+if (isNonReportEvents) Message = NonReportableEvents.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"NonReportEvent_{Byte2id:X2}").First();
+if (isSpecialReport) Message = SpecialReportings.Where(x => x.Byte2 == Byte2id).Select(x => x.Name).DefaultIfEmpty($"SpecialReporting_{Byte2id:X2}").First();
 
 Console.Write($"{Event}, {Message}");
 Console.WriteLine();
@@ -139,9 +139,8 @@ These values will be written back to the list every time when the zone accessed.
 ```C#
 if (isZoneEvent)
 {
-    //save the IRState into zone's list
     bool IsZoneOpen = false;
-    if (Byte1id == "04") IsZoneOpen = true;
+    if (Byte1id == 0x04) IsZoneOpen = true;
     //update existing list with the IR statuses and activating/closing time
     Zones.Where(x => x.Byte2 == Byte2id).Select(x => { x.IsZoneOpen = IsZoneOpen; x.ZoneEventTime = DateTimeOffset.Now; return x; }).ToList();
     Message = Zones.Where(x => x.Byte2 == Byte2id).Select(x => $"{x.ZoneName} {(x.IsZoneOpen ? "Open" : "Closed")}").DefaultIfEmpty($"Zone_{Byte2id}").First();
@@ -160,48 +159,19 @@ Example 2: Disarm event 0x3F has only one subcategory with a number 0x01 which r
 
 The method `GetAccessCode(Byte1id, Byte2id)` is calculating correct User Access code.
 ```C#
-public static string GetAccessCode(string Byte1, string Byte2)
+public static string GetAccessCode(int Byte1, int Byte2)
 {
-    int count = 0;
-    bool found = false;
-    string[] AccessCodeStart = new string[6] { "28", "2C", "34", "3C", "40", "44" };
-    for (int i = 0; i < AccessCodeStart.Length; i++)
-    {
-        var startCode = Convert.ToInt32(AccessCodeStart[i], 16);
-        for (int j = 0; j < 4; j++)
-        {
-            var code = (startCode + j).ToString("X2");
-            if (Byte1 == code)
-            {
-                count = j;
-                found = true;
-                break;
-            }
-        }
-        if (found) break;
-    }
-    var byte2 = Convert.ToInt32(Byte2, 16);
-    int output = byte2 / 16 + count * 16;
-    string AccessCode = output < 10 ? $"User Code 00{output}" : $"User Code 0{output}";
-    if (count == 0)
-    {
-        switch (output)
-        {
-            case 1:
-                AccessCode = "Master code";
-                break;
-            case 2:
-                AccessCode = "Master Code 1";
-                break;
-            case 3:
-                AccessCode = "Master Code 2";
-                break;
-        }
-    }
-    if (count == 3)
-        AccessCode = "Duress Code";
+    int twoBytes = (Byte1 << 8) + Byte2;
+    int code = (twoBytes & 0x3F0) >> 4;
+
+    string AccessCode = code < 10 ? $"User Code 00{code}" : $"User Code 0{code}";
+    if (code == 1) AccessCode = "Master code";
+    if (code == 2) AccessCode = "Master Code 1";
+    if (code == 3) AccessCode = "Master Code 2";
+    if (code == 48) AccessCode = "Duress Code";
     return AccessCode;
 }
+
 ```
 
 Following is the output of this program.
@@ -232,7 +202,7 @@ Byte1 : Byte2 = 0000 0000 : 0000 0000
 
 Graphical view of this.
 
-<img src="Readme/binary_solution1.png" alt="Clock" width="200"/>
+<img src="Readme/binary_solution1.png" alt="Clock" width="300"/>
 
 This is my project of the Clock with the generator.<br/>
 https://github.com/LeivoSepp/Octal-Clock-Two-Bytes-24h 
